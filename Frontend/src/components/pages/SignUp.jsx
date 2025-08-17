@@ -21,6 +21,17 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check if all required fields are filled
+    if (!formData.name || !formData.age || !formData.email || !formData.password) {
+      Swal.fire({
+        icon: "error",
+        title: "Error...",
+        text: "All fields are required!",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -33,42 +44,43 @@ const SignUp = () => {
       });
       const data = await res.json();
 
-      console.log(data);
-      if (
-        data.name == "This field is required." || 
-        data.age == "This field is required." ||
-        data.email == "This field is required." ||
-        data.password == "This field is required."
-      ) {
-        setLoading(false);
-        Swal.fire({
-          icon: "error",
-          title: "Error...",
-          text: "All fields are required!",
-        });
-        return;
-      }
-      else if(data.success!=true){
-        Swal.fire({
-          icon: "error",
-          title: "Error...",
-          text: "User Already Exist.",
-        });
-  
-        return
-      }
-      else{
+      console.log("Registration response:", data);
+      
+      if (res.ok && data.success) {
         Swal.fire({
           icon: "success",
           title: "User Registered Successfully",
+          text: "Welcome! You can now login with your credentials.",
           showConfirmButton: false,
-          timer: 1500
+          timer: 2000
         });
         setLoading(false);
-        navigate("/quiz");}
-      
+        navigate("/signin"); // Redirect to login page instead of quiz
+      } else {
+        setLoading(false);
+        // Handle specific validation errors
+        if (data.email && data.email.includes("already exists")) {
+          Swal.fire({
+            icon: "error",
+            title: "Registration Failed",
+            text: "A user with this email already exists. Please use a different email or try logging in.",
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Registration Failed",
+            text: "Please check your input and try again.",
+          });
+        }
+      }
     } catch (error) {
+      console.log("Registration error:", error);
       setLoading(false);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Network error. Please check your connection and try again.",
+      });
     }
   };
 
@@ -125,28 +137,24 @@ const SignUp = () => {
           </label>
 
           <div className="flex flex-row justify-center">
-
             <button
               type="submit"
-              className="py-3 px-8 rounded-xl bg-red-600 w-fit text-black font-bold shadow-md shadow-primary hover:bg-red-400"
+              className="py-3 px-8 rounded-xl bg-red-600 w-fit text-black font-bold shadow-md shadow-primary hover:bg-red-400 transition-colors"
               onClick={handleSubmit}
             >
               {loading ? "Register..." : "Register"}
             </button>
-
           </div>
-          
 
-          {/* <div className="flex gap-10 items-center">
-            <p className="">Already have an Account?</p>
-            <Link
-              className="py-3 px-8 rounded-xl bg-red-600 w-fit text-black font-bold shadow-md shadow-primary
-                          hover:bg-red-400"
-              to={"/signin"}
+          <div className="flex flex-col gap-4 items-center mt-6">
+            <p className="text-white text-center">Already have an Account?</p>
+            <button
+              onClick={() => navigate("/signin")}
+              className="py-3 px-8 rounded-xl bg-indigo-600 w-fit text-white font-bold shadow-md shadow-primary hover:bg-indigo-500 transition-colors"
             >
               Sign In
-            </Link>
-          </div> */}
+            </button>
+          </div>
         </form>
       </motion.div>
 

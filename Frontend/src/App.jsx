@@ -8,6 +8,8 @@ import { Predict } from "./components";
 import Chat from "./components/pages/Chat";
 import VoiceBot from "./components/pages/Voice";
 import TestPredict from "./components/pages/TestPredict";
+import SignIn from "./components/pages/SignIn";
+import SignUp from "./components/pages/SignUp";
 import "regenerator-runtime/runtime";
 
 
@@ -17,6 +19,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HelpToHome />} />
         <Route path="/register" element={<HelpToSignUp />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/signin" element={<SignIn />} />
         <Route path="/quiz" element={<HelpToQuiz />} />
         <Route path="/predict" element={<Predict />} />
         <Route path="/test-predict" element={<TestPredict />} />

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { styles } from "../../styles";
 import { EarthCanvas } from "../canvas";
 import { slideIn } from "../../utils/motion";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import "regenerator-runtime/runtime";
 
@@ -21,6 +21,19 @@ const SignIn = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check if form data is complete
+    if (!formData.email || !formData.password) {
+      Swal.fire({
+        icon: "error",
+        title: "Error...",
+        text: "Please fill in both email and password!",
+      });
+      return;
+    }
+
+    console.log("Attempting login with:", { email: formData.email, password: formData.password });
+
     try {
       setLoading(true);
       const res = await fetch("http://localhost:8000/api/auth/signin/", {
@@ -30,22 +43,37 @@ const SignIn = () => {
         },
         body: JSON.stringify(formData),
       });
+      
       const data = await res.json();
-      console.log(data);
-      if (!data.success) {
+      console.log("Login response status:", res.status);
+      console.log("Login response data:", data);
+      
+      if (res.ok && data.success) {
         setLoading(false);
-        //alert(Error);
+        Swal.fire({
+          icon: "success",
+          title: "Login Successful!",
+          text: `Welcome back, ${data.user?.name || 'User'}!`,
+          showConfirmButton: false,
+          timer: 1500
+        });
+        navigate("/quiz");
+      } else {
+        setLoading(false);
         Swal.fire({
           icon: "error",
-          title: "Oops...",
-          text: "Invalid Credentials!",
+          title: "Login Failed",
+          text: data.message || "Invalid credentials. Please try again.",
         });
-        return;
       }
-      setLoading(false);
-      navigate("/quiz");
     } catch (error) {
-      console.log(error);
+      console.log("Login error:", error);
+      setLoading(false);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Network error. Please check your connection and try again.",
+      });
     }
   };
 
@@ -82,20 +110,20 @@ const SignIn = () => {
           </label>
           <button
             type="submit"
-            className="py-3 px-8 rounded-xl bg-red-600 w-fit text-black font-bold shadow-md shadow-primary hover:bg-red-400"
+            className="py-3 px-8 rounded-xl bg-red-600 w-fit text-black font-bold shadow-md shadow-primary hover:bg-red-400 transition-colors"
             onClick={handleSubmit}
           >
             {loading ? "Signin..." : "Sign In"}
           </button>
-          <div className="flex gap-10 items-center">
-            <p className="">Don't have an Account?</p>
-            <Link
-              to={"/signup"}
-              className="py-3 px-8 rounded-xl bg-red-600 w-fit text-black font-bold shadow-md shadow-primary
-                          hover:bg-red-400"
+          
+          <div className="flex flex-col gap-4 items-center mt-6">
+            <p className="text-white text-center">Don't have an Account?</p>
+            <button
+              onClick={() => navigate("/signup")}
+              className="py-3 px-8 rounded-xl bg-indigo-600 w-fit text-white font-bold shadow-md shadow-primary hover:bg-indigo-500 transition-colors"
             >
               Sign Up
-            </Link>
+            </button>
           </div>
         </form>
       </motion.div>

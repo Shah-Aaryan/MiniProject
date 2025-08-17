@@ -8,8 +8,12 @@ import "regenerator-runtime/runtime";
 const Header = () => {
   const navigate = useNavigate();
 
-  const buttonClick = () => {
-    navigate("/register");
+  const handleSignUp = () => {
+    navigate("/signup");
+  };
+
+  const handleSignIn = () => {
+    navigate("/signin");
   };
 
   return (
@@ -40,33 +44,54 @@ const Header = () => {
             deletionSpeed={40}
           />
         </div>
-        <div className="w-full flex flex-row mt-8">
-
-            <button
-              type="button"
-              className="animate-bounce items-center focus:animate-none hover:animate-none inline-flex text-md font-medium bg-indigo-900 mt-3 px-4 py-2 rounded-lg tracking-wide text-white h-10"
-              onClick={buttonClick}
+        <div className="w-full flex flex-row gap-4 mt-8">
+          <button
+            type="button"
+            className="animate-bounce items-center focus:animate-none hover:animate-none inline-flex text-md font-medium bg-indigo-900 mt-3 px-6 py-3 rounded-lg tracking-wide text-white h-12 hover:bg-indigo-800 transition-colors"
+            onClick={handleSignIn}
+          >
+            <span>Login</span>
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              stroke-width="0"
+              viewBox="0 0 16 16"
+              className="ml-2"
+              height="1em"
+              width="1em"
+              xm
+              lns="http://www.w3.org/2000/svg"
             >
-              <span>Get Started</span>
-              <svg
-                stroke="currentColor"
-                fill="currentColor"
-                stroke-width="0"
-                viewBox="0 0 16 16"
-                className="ml-2"
-                height="1em"
-                width="1em"
-                xm
-                lns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"
-                ></path>
-              </svg>
-            </button>
+              <path
+                fill-rule="evenodd"
+                d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"
+              ></path>
+            </svg>
+          </button>
 
- 
+          <button
+            type="button"
+            className="animate-bounce items-center focus:animate-none hover:animate-none inline-flex text-md font-medium bg-red-600 mt-3 px-6 py-3 rounded-lg tracking-wide text-white h-12 hover:bg-red-700 transition-colors"
+            onClick={handleSignUp}
+          >
+            <span>Register</span>
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              stroke-width="0"
+              viewBox="0 0 16 16"
+              className="ml-2"
+              height="1em"
+              width="1em"
+              xm
+              lns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"
+              ></path>
+            </svg>
+          </button>
         </div>
       </div>
 
