@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../index.css";
 import { TypeAnimation } from "react-type-animation";
 import "regenerator-runtime/runtime";
@@ -43,6 +44,7 @@ const Chat = () => {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -89,6 +91,18 @@ const Chat = () => {
           {" "}
           Chat with Personal Assistant
         </h1>
+        
+        {/* Voice Page Navigation Button */}
+        <div className="mt-6 mb-8">
+          <button
+            onClick={() => navigate("/voice")}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 shadow-lg"
+          >
+            <span>🎤</span>
+            <span>Try Voice Assistant</span>
+          </button>
+        </div>
+        
         <TypeAnimation
           sequence={[
             "We assist for Software Development.",
