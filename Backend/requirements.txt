@@ -86,3 +86,9 @@ uritemplate
 urllib3
 whitenoise
 yarl
+# Additional dependencies for advanced features
+matplotlib>=3.5.0
+seaborn>=0.11.0
+plotly>=5.0.0
+celery>=5.2.0
+redis>=4.0.0

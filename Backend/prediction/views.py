@@ -3,6 +3,8 @@
 # Create your views here.
 import joblib
 import os
+import json
+from datetime import datetime, timedelta
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -10,10 +12,22 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from .serializers import PredictionSerializer, SignInSerializer, SignUpSerializer, UserSerializer
-from .models import UserModel
+from .serializers import (
+    PredictionSerializer, SignInSerializer, SignUpSerializer, UserSerializer,
+    UserProfileSerializer, QuizSessionSerializer, AdaptiveQuizQuestionSerializer,
+    LearningPathSerializer, LearningMilestoneSerializer, MilestoneProgressSerializer,
+    ExplainableAIResponseSerializer, AdaptiveQuizResponseSerializer,
+    LearningPathGenerationSerializer, MilestoneUpdateSerializer
+)
+from .models import (
+    UserModel, UserProfile, QuizSession, AdaptiveQuizQuestion,
+    LearningPath, LearningMilestone, MilestoneProgress, UserReminder
+)
 
 from utils.utility import predict_sentiment
+from utils.explainable_ai import ExplainableAI
+from utils.adaptive_quiz import AdaptiveQuizEngine
+from utils.learning_path_generator import LearningPathGenerator
 
 class PredictionView(APIView):
     def post(self, request, *args, **kwargs):
@@ -132,11 +146,47 @@ class PredictionView(APIView):
             # Calculate confidence percentage
             confidence_percentage = round(predicted_proba * 100, 2)
 
+            # Enhanced response with explainable AI features
+            explainable_ai = ExplainableAI()
+            
+            # Get feature importance
+            feature_importance = explainable_ai.get_feature_importance(encoded_data, predicted_class)
+            
+            # Get counterfactual tips
+            counterfactual_tips = explainable_ai.generate_counterfactual_tips(encoded_data)
+            
+            # Get calibration data
+            calibration_data = explainable_ai.calculate_calibration_data(encoded_data)
+            
+            # Save quiz session if user is provided
+            user_id = request.data.get('user_id')
+            if user_id:
+                try:
+                    user = UserModel.objects.get(id=user_id)
+                    quiz_session = QuizSession.objects.create(
+                        user=user,
+                        session_type='standard',
+                        responses=dict(zip([f'question{i}' for i in range(1, 20)], data)),
+                        predicted_role=predicted_role,
+                        confidence_score=predicted_proba,
+                        feature_importance=feature_importance,
+                        counterfactual_tips=counterfactual_tips,
+                        calibration_data=calibration_data,
+                        completed=True
+                    )
+                except UserModel.DoesNotExist:
+                    pass  # Continue without saving session
+
             return Response({
                 'prediction': predicted_role,
                 'probability': predicted_proba,
                 'confidence_percentage': confidence_percentage,
-                'prediction_code': predicted_class
+                'prediction_code': predicted_class,
+                'explainable_ai': {
+                    'feature_importance': feature_importance,
+                    'counterfactual_tips': counterfactual_tips,
+                    'calibration_data': calibration_data
+                }
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -212,3 +262,408 @@ class SentimentAnalysisView(APIView):
             
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# ============================================================================
+# ADVANCED FEATURES VIEWS
+# ============================================================================
+
+class AdaptiveQuizView(APIView):
+    """Handle adaptive quiz sessions with IRT/CAT"""
+    
+    def post(self, request, *args, **kwargs):
+        """Start a new adaptive quiz session"""
+        try:
+            user_id = request.data.get('user_id')
+            experience_level = request.data.get('experience_level', 'student')
+            
+            if not user_id:
+                return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.get(id=user_id)
+            
+            # Initialize adaptive quiz engine
+            quiz_engine = AdaptiveQuizEngine()
+            
+            # Start new session
+            session_data = quiz_engine.start_adaptive_session(user_id, experience_level)
+            
+            # Create database session
+            quiz_session = QuizSession.objects.create(
+                user=user,
+                session_type='adaptive',
+                responses=session_data['responses'],
+                completed=False
+            )
+            
+            session_data['session_id'] = quiz_session.id
+            
+            return Response({
+                'session': session_data,
+                'message': 'Adaptive quiz session started successfully'
+            }, status=status.HTTP_201_CREATED)
+            
+        except UserModel.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def put(self, request, *args, **kwargs):
+        """Process response and get next question"""
+        try:
+            session_id = request.data.get('session_id')
+            response = request.data.get('response')
+            
+            if not session_id or response is None:
+                return Response({'error': 'Session ID and response required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get session from database
+            quiz_session = QuizSession.objects.get(id=session_id)
+            
+            # Initialize quiz engine and load session
+            quiz_engine = AdaptiveQuizEngine()
+            
+            # Reconstruct session data (in production, you might cache this)
+            session_data = {
+                'user_id': quiz_session.user.id,
+                'experience_level': quiz_session.user.profile.experience_level if hasattr(quiz_session.user, 'profile') else 'student',
+                'questions_asked': list(quiz_session.responses.keys()),
+                'responses': quiz_session.responses,
+                'ability_estimate': 0.0,  # Would be stored in session
+                'ability_se': 1.0,
+                'question_count': len(quiz_session.responses),
+                'max_questions': 15,
+                'termination_criteria': {'se_threshold': 0.3, 'min_questions': 5, 'max_questions': 15}
+            }
+            
+            # Process the response
+            updated_session = quiz_engine.process_response(session_data, response)
+            
+            # Update database session
+            quiz_session.responses = updated_session['responses']
+            quiz_session.completed = updated_session.get('completed', False)
+            
+            if quiz_session.completed:
+                # Generate final prediction
+                explainable_ai = ExplainableAI()
+                # Convert responses to format expected by prediction model
+                # This would need to be implemented based on your specific model
+                quiz_session.predicted_role = "Predicted Role"  # Placeholder
+                quiz_session.confidence_score = updated_session.get('final_ability', 0.5)
+            
+            quiz_session.save()
+            
+            return Response({
+                'session': updated_session,
+                'completed': quiz_session.completed
+            }, status=status.HTTP_200_OK)
+            
+        except QuizSession.DoesNotExist:
+            return Response({'error': 'Quiz session not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class LearningPathView(APIView):
+    """Generate and manage personalized learning paths"""
+    
+    def post(self, request, *args, **kwargs):
+        """Generate a new learning path"""
+        try:
+            serializer = LearningPathGenerationSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.get(id=user_id)
+            
+            # Initialize learning path generator
+            path_generator = LearningPathGenerator()
+            
+            # Generate learning path
+            path_data = path_generator.generate_learning_path(
+                target_role=serializer.validated_data['target_role'],
+                current_skills=serializer.validated_data['current_skills'],
+                experience_level=serializer.validated_data['experience_level'],
+                preferences=serializer.validated_data.get('preferences', {})
+            )
+            
+            if 'error' in path_data:
+                return Response(path_data, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Create learning path in database
+            learning_path = LearningPath.objects.create(
+                user=user,
+                target_role=path_data['target_role'],
+                difficulty_level=path_data['experience_level'],
+                estimated_duration_weeks=path_data['estimated_duration_weeks'],
+                roadmap=path_data['milestones']
+            )
+            
+            # Create milestones
+            for milestone_data in path_data['milestones']:
+                LearningMilestone.objects.create(
+                    learning_path=learning_path,
+                    title=milestone_data['title'],
+                    description=milestone_data['description'],
+                    milestone_type=milestone_data['milestone_type'],
+                    order=milestone_data['order'],
+                    estimated_hours=milestone_data['estimated_hours'],
+                    resources=milestone_data.get('resources', []),
+                    prerequisites=milestone_data.get('prerequisites', []),
+                    skills_gained=milestone_data.get('skills_covered', [])
+                )
+            
+            # Serialize and return
+            serializer = LearningPathSerializer(learning_path)
+            return Response({
+                'learning_path': serializer.data,
+                'generation_details': path_data
+            }, status=status.HTTP_201_CREATED)
+            
+        except UserModel.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def get(self, request, *args, **kwargs):
+        """Get user's learning paths"""
+        try:
+            user_id = request.query_params.get('user_id')
+            if not user_id:
+                return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.get(id=user_id)
+            learning_paths = LearningPath.objects.filter(user=user)
+            
+            serializer = LearningPathSerializer(learning_paths, many=True)
+            return Response({
+                'learning_paths': serializer.data
+            }, status=status.HTTP_200_OK)
+            
+        except UserModel.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class MilestoneProgressView(APIView):
+    """Track and update milestone progress"""
+    
+    def post(self, request, *args, **kwargs):
+        """Update milestone progress"""
+        try:
+            serializer = MilestoneUpdateSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.get(id=user_id)
+            milestone = LearningMilestone.objects.get(id=serializer.validated_data['milestone_id'])
+            
+            # Create progress log
+            progress_log = MilestoneProgress.objects.create(
+                milestone=milestone,
+                user=user,
+                progress_notes=serializer.validated_data.get('notes', ''),
+                time_spent_minutes=serializer.validated_data['time_spent_minutes'],
+                completion_percentage=serializer.validated_data['progress_percentage'],
+                feedback=serializer.validated_data.get('feedback', '')
+            )
+            
+            # Update milestone status and progress
+            milestone.progress_percentage = serializer.validated_data['progress_percentage']
+            
+            if milestone.progress_percentage >= 100:
+                milestone.status = 'completed'
+                milestone.completed_at = datetime.now()
+            elif milestone.progress_percentage > 0:
+                milestone.status = 'in_progress'
+                if not milestone.started_at:
+                    milestone.started_at = datetime.now()
+            
+            milestone.save()
+            
+            # Check if learning path should be updated
+            learning_path = milestone.learning_path
+            total_milestones = learning_path.milestones.count()
+            completed_milestones = learning_path.milestones.filter(status='completed').count()
+            
+            if completed_milestones == total_milestones:
+                # Learning path completed - could trigger notifications, certificates, etc.
+                pass
+            
+            serializer = MilestoneProgressSerializer(progress_log)
+            return Response({
+                'progress_log': serializer.data,
+                'milestone_updated': True
+            }, status=status.HTTP_201_CREATED)
+            
+        except (UserModel.DoesNotExist, LearningMilestone.DoesNotExist) as e:
+            return Response({'error': 'User or milestone not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def get(self, request, *args, **kwargs):
+        """Get progress for a milestone or learning path"""
+        try:
+            milestone_id = request.query_params.get('milestone_id')
+            learning_path_id = request.query_params.get('learning_path_id')
+            user_id = request.query_params.get('user_id')
+            
+            if not user_id:
+                return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.get(id=user_id)
+            
+            if milestone_id:
+                milestone = LearningMilestone.objects.get(id=milestone_id)
+                progress_logs = MilestoneProgress.objects.filter(milestone=milestone, user=user)
+                serializer = MilestoneProgressSerializer(progress_logs, many=True)
+                return Response({'progress_logs': serializer.data}, status=status.HTTP_200_OK)
+            
+            elif learning_path_id:
+                learning_path = LearningPath.objects.get(id=learning_path_id, user=user)
+                milestones = learning_path.milestones.all()
+                
+                progress_summary = []
+                for milestone in milestones:
+                    latest_progress = MilestoneProgress.objects.filter(
+                        milestone=milestone, user=user
+                    ).order_by('-created_at').first()
+                    
+                    progress_summary.append({
+                        'milestone': LearningMilestoneSerializer(milestone).data,
+                        'latest_progress': MilestoneProgressSerializer(latest_progress).data if latest_progress else None
+                    })
+                
+                return Response({'progress_summary': progress_summary}, status=status.HTTP_200_OK)
+            
+            else:
+                return Response({'error': 'Milestone ID or Learning Path ID required'}, status=status.HTTP_400_BAD_REQUEST)
+                
+        except (UserModel.DoesNotExist, LearningMilestone.DoesNotExist, LearningPath.DoesNotExist):
+            return Response({'error': 'Resource not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class UserProfileView(APIView):
+    """Manage user profiles and experience levels"""
+    
+    def post(self, request, *args, **kwargs):
+        """Create or update user profile"""
+        try:
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.get(id=user_id)
+            
+            # Get or create profile
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            
+            # Update profile data
+            profile.experience_level = request.data.get('experience_level', profile.experience_level)
+            profile.skills = request.data.get('skills', profile.skills)
+            profile.preferences = request.data.get('preferences', profile.preferences)
+            profile.save()
+            
+            serializer = UserProfileSerializer(profile)
+            return Response({
+                'profile': serializer.data,
+                'created': created
+            }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+            
+        except UserModel.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def get(self, request, *args, **kwargs):
+        """Get user profile"""
+        try:
+            user_id = request.query_params.get('user_id')
+            if not user_id:
+                return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.get(id=user_id)
+            
+            try:
+                profile = user.profile
+                serializer = UserProfileSerializer(profile)
+                return Response({'profile': serializer.data}, status=status.HTTP_200_OK)
+            except UserProfile.DoesNotExist:
+                return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+                
+        except UserModel.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ReminderView(APIView):
+    """Manage user reminders and notifications"""
+    
+    def post(self, request, *args, **kwargs):
+        """Create a new reminder"""
+        try:
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.get(id=user_id)
+            
+            reminder = UserReminder.objects.create(
+                user=user,
+                reminder_type=request.data.get('reminder_type'),
+                title=request.data.get('title'),
+                message=request.data.get('message'),
+                related_object_id=request.data.get('related_object_id'),
+                scheduled_for=datetime.fromisoformat(request.data.get('scheduled_for'))
+            )
+            
+            return Response({
+                'reminder_id': reminder.id,
+                'message': 'Reminder created successfully'
+            }, status=status.HTTP_201_CREATED)
+            
+        except UserModel.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def get(self, request, *args, **kwargs):
+        """Get user's reminders"""
+        try:
+            user_id = request.query_params.get('user_id')
+            if not user_id:
+                return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = UserModel.objects.get(id=user_id)
+            
+            # Get upcoming reminders
+            upcoming_reminders = UserReminder.objects.filter(
+                user=user,
+                scheduled_for__gte=datetime.now(),
+                sent=False
+            ).order_by('scheduled_for')
+            
+            reminders_data = []
+            for reminder in upcoming_reminders:
+                reminders_data.append({
+                    'id': reminder.id,
+                    'type': reminder.reminder_type,
+                    'title': reminder.title,
+                    'message': reminder.message,
+                    'scheduled_for': reminder.scheduled_for.isoformat(),
+                    'related_object_id': reminder.related_object_id
+                })
+            
+            return Response({'reminders': reminders_data}, status=status.HTTP_200_OK)
+            
+        except UserModel.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

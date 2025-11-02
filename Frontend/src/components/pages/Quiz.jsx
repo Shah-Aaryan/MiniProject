@@ -116,11 +116,18 @@ const Quiz = () => {
       console.log('API Response data:', data);
 
       if (res.ok) {
-        navigate("/predict", {
+        // Store prediction data for enhanced results page
+        const predictionData = {
+          prediction: data.prediction,
+          probability: data.probability,
+          confidence_percentage: data.confidence_percentage,
+          prediction_code: data.prediction_code,
+          explainable_ai: data.explainable_ai || {}
+        };
+        
+        navigate("/results", {
           state: {
-            prediction: data.prediction,
-            probability: data.probability,
-            confidence_percentage: data.confidence_percentage,
+            predictionData: predictionData
           },
         });
       } else {
