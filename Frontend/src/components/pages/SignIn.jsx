@@ -36,11 +36,12 @@ const SignIn = () => {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/api/auth/signin/", {
+      const res = await fetch("http://localhost:8000/api/signin/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
       
@@ -57,6 +58,9 @@ const SignIn = () => {
           showConfirmButton: false,
           timer: 1500
         });
+        if (data.user?.id) {
+          localStorage.setItem('userId', String(data.user.id));
+        }
         navigate("/quiz");
       } else {
         setLoading(false);

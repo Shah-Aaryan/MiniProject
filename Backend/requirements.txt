@@ -1,94 +1,149 @@
-aiohttp
-aiosignal
-annotated-types
+# ===============================
+# Core Django & REST Framework
+# ===============================
+Django==4.2.7
+djangorestframework==3.14.0
+django-cors-headers==4.3.0
+django-filter==23.3
 asgiref
-attrs
-cachetools
-certifi
-charset-normalizer
-click
-colorama
-comtypes
-dataclasses-json
-Django
-django-cors-headers
-djangorestframework
-faiss-cpu
-filelock
-frozenlist
-fsspec
-google-ai-generativelanguage
-google-api-core
-google-api-python-client
-google-auth
-google-auth-httplib2
-google-generativeai
-googleapis-common-protos
-greenlet
-grpcio
-grpcio-status
-httplib2
-huggingface-hub
-idna
-Jinja2
+sqlparse
+whitenoise
+
+# ===============================
+# API Documentation & Environment
+# ===============================
+drf-yasg==1.21.7
+python-decouple==3.8
+python-dotenv
+
+# ===============================
+# Task Queue & Caching
+# ===============================
+celery==5.3.4
+redis==5.0.1
+django-redis==5.4.0
+
+# ===============================
+# File & Data Handling
+# ===============================
+Pillow==10.1.0
+openpyxl==3.1.2
+pandas==2.1.3
+numpy==1.26.2
+python-dateutil==2.8.2
+pytz==2023.3
+requests==2.31.0
+
+# ===============================
+# PDF & Report Generation
+# ===============================
+reportlab==4.0.7
+# weasyprint==60.1  # Optional for advanced PDF generation
+
+# ===============================
+# Data Analysis & Visualization
+# ===============================
+matplotlib>=3.5.0
+seaborn>=0.11.0
+plotly>=5.0.0
+
+# ===============================
+# AI / ML & Language Processing
+# ===============================
+scikit-learn
+scipy
+torch
+transformers
+nltk
 joblib
-jsonpatch
-jsonpointer
+regex
+tqdm
+faiss-cpu
 langchain
 langchain-community
 langchain-core
 langchain-google-genai
 langchain-text-splitters
 langsmith
-MarkupSafe
-marshmallow
-mkl
-mpmath
-multidict
-mypy-extensions
-networkx
-nltk
-numpy
-orjson
-packaging
+google-generativeai
+google-ai-generativelanguage
+huggingface-hub
+safetensors
+
+# ===============================
+# Google & Cloud Dependencies
+# ===============================
+google-api-core
+google-api-python-client
+google-auth
+google-auth-httplib2
+googleapis-common-protos
+grpcio
+grpcio-status
 proto-plus
 protobuf
-psycopg
-pyasn1
-pyasn1_modules
-pydantic
-pydantic_core
-pyparsing
-PyPDF2
-python-dotenv
-pyttsx3
-PyYAML
-regex
-requests
+httplib2
+cachetools
 rsa
-safetensors
-scikit-learn
-scipy
-SpeechRecognition
-SQLAlchemy
-sqlparse
-sympy
-tenacity
-threadpoolctl
-tokenizers
-torch
-tqdm
-transformers
+
+# ===============================
+# Utilities & JSON Handling
+# ===============================
+attrs
+dataclasses-json
+marshmallow
 typing-inspect
 typing_extensions
-tzdata
-uritemplate
+pydantic
+pydantic_core
+annotated-types
+mypy-extensions
+orjson
+jsonpatch
+jsonpointer
+pyparsing
+packaging
+MarkupSafe
+Jinja2
+PyYAML
+colorama
+click
+filelock
+
+# ===============================
+# Database & ORM
+# ===============================
+SQLAlchemy
+greenlet
+psycopg
+
+# ===============================
+# Audio, Speech, & Text Processing
+# ===============================
+SpeechRecognition
+pyttsx3
+PyPDF2
+comtypes
+
+# ===============================
+# Network & HTTP Libraries
+# ===============================
+aiohttp
+aiosignal
+frozenlist
+multidict
+charset-normalizer
 urllib3
-whitenoise
+idna
+uritemplate
 yarl
-# Additional dependencies for advanced features
-matplotlib>=3.5.0
-seaborn>=0.11.0
-plotly>=5.0.0
-celery>=5.2.0
-redis>=4.0.0
+
+# ===============================
+# Math, Scientific, Misc
+# ===============================
+sympy
+mpmath
+networkx
+mkl
+tenacity
+threadpoolctl

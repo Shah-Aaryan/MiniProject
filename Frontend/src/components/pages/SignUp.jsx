@@ -35,11 +35,12 @@ const SignUp = () => {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:8000/api/auth/signup/", {
+      const res = await fetch("http://localhost:8000/api/signup/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
       const data = await res.json();

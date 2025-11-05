@@ -11,9 +11,12 @@ import TestPredict from "./components/pages/TestPredict";
 import SignIn from "./components/pages/SignIn";
 import SignUp from "./components/pages/SignUp";
 import EnhancedResults from "./components/pages/EnhancedResults";
-import AdaptiveQuiz from "./components/adaptiveQuiz/AdaptiveQuiz";
+//import AdaptiveQuiz from "./components/adaptiveQuiz/AdaptiveQuiz";
 import LearningPath from "./components/learningPath/LearningPath";
-import AdvancedFeatures from "./components/navigation/AdvancedFeatures";
+// Removed AdvancedFeatures page
+//import Portfolio from "./components/portfolio/Portfolio";
+//import SkillAssessments from "./components/assessments/SkillAssessments";
+//import LaborMarket from "./components/laborMarket/LaborMarket";
 import "regenerator-runtime/runtime";
 
 
@@ -29,9 +32,7 @@ export default function App() {
         <Route path="/predict" element={<Predict />} />
         <Route path="/test-predict" element={<TestPredict />} />
         <Route path="/results" element={<EnhancedResults />} />
-        <Route path="/adaptive-quiz" element={<AdaptiveQuiz userId={localStorage.getItem('userId')} />} />
-        <Route path="/learning-path" element={<LearningPath userId={localStorage.getItem('userId')} />} />
-        <Route path="/features" element={<AdvancedFeatures />} />
+        {/* Features page removed */}
         <Route path="/chat" element={<Chat />} />
         <Route path="/voice" element={<VoiceBot />} />
         <Route path="*" element={<NotFound />} />
