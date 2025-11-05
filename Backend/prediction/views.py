@@ -29,6 +29,42 @@ from utils.explainable_ai import ExplainableAI
 from utils.adaptive_quiz import AdaptiveQuizEngine
 from utils.learning_path_generator import LearningPathGenerator
 
+class AIExplanationsView(APIView):
+    """Return explanation text for recommendations"""
+    def post(self, request, *args, **kwargs):
+        try:
+            role = request.data.get('role') or request.data.get('predicted_role')
+            responses = request.data.get('responses')  # optional list of numeric features
+            if not role and not responses:
+                return Response({'error': 'Provide role or responses for explanation'}, status=status.HTTP_400_BAD_REQUEST)
+
+            explainer = ExplainableAI()
+
+            # If responses provided, generate richer explanation blocks
+            if isinstance(responses, list) and len(responses) >= 5:
+                # Try to map role name to class for context (best-effort)
+                importance = explainer.get_feature_importance(responses, explainer._get_role_class(role) or 0)
+                counterfactual = explainer.generate_counterfactual_tips(responses, target_role=role)
+                calibration = explainer.calculate_calibration_data(responses)
+
+                return Response({
+                    'explanation': {
+                        'feature_importance': importance,
+                        'counterfactual_tips': counterfactual,
+                        'calibration': calibration
+                    }
+                }, status=status.HTTP_200_OK)
+
+            # Fallback: role-only generic text
+            role_text = role or 'the recommended role'
+            text = (
+                f"{role_text}: This role typically requires strong fundamentals, hands-on projects, and soft skills. "
+                "We recommend building a portfolio of 2-3 targeted projects, strengthening core skills, and following a focused learning path."
+            )
+            return Response({'explanation': {'text': text}}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class PredictionView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = PredictionSerializer(data=request.data)
@@ -196,8 +232,8 @@ class SignUpView(APIView):
     def post(self, request, *args, **kwargs):
          serializer = SignUpSerializer(data=request.data)
          if(serializer.is_valid()):
-             serializer.save()
-             return Response({'success': True}, status=status.HTTP_201_CREATED)
+            user = serializer.save()
+            return Response({'success': True, 'user': {'id': user.id, 'name': user.name, 'email': user.email, 'age': user.age}}, status=status.HTTP_201_CREATED)
          else:
              return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -219,6 +255,7 @@ class SignInView(APIView):
                         'success': True, 
                         'message': 'Login successful',
                         'user': {
+                            'id': user.id,
                             'name': user.name,
                             'email': user.email,
                             'age': user.age
@@ -297,8 +334,30 @@ class AdaptiveQuizView(APIView):
             
             session_data['session_id'] = quiz_session.id
             
+            # Format response for frontend
+            current_question = session_data.get('current_question', {})
+            formatted_session = {
+                'session_id': quiz_session.id,
+                'user_id': user_id,
+                'experience_level': experience_level,
+                'question_count': session_data.get('question_count', 0),
+                'max_questions': session_data.get('max_questions', 15),
+                'current_question': {
+                    'id': current_question.get('id', ''),
+                    'text': current_question.get('text', ''),
+                    'type': current_question.get('type', 'rating'),
+                    'options': current_question.get('options', []),
+                    'scale': current_question.get('scale', [1, 10]),
+                    'category': current_question.get('category', '')
+                },
+                'progress': {
+                    'completed': session_data.get('question_count', 0),
+                    'total': session_data.get('max_questions', 15)
+                }
+            }
+            
             return Response({
-                'session': session_data,
+                'session': formatted_session,
                 'message': 'Adaptive quiz session started successfully'
             }, status=status.HTTP_201_CREATED)
             
@@ -352,8 +411,30 @@ class AdaptiveQuizView(APIView):
             
             quiz_session.save()
             
+            # Format response for frontend
+            current_question = updated_session.get('current_question', {})
+            formatted_session = {
+                'session_id': quiz_session.id,
+                'question_count': updated_session.get('question_count', 0),
+                'max_questions': updated_session.get('max_questions', 15),
+                'current_question': {
+                    'id': current_question.get('id', ''),
+                    'text': current_question.get('text', ''),
+                    'type': current_question.get('type', 'rating'),
+                    'options': current_question.get('options', []),
+                    'scale': current_question.get('scale', [1, 10]),
+                    'category': current_question.get('category', '')
+                } if current_question else None,
+                'progress': {
+                    'completed': updated_session.get('question_count', 0),
+                    'total': updated_session.get('max_questions', 15)
+                },
+                'efficiency_score': updated_session.get('efficiency_score', 0.0),
+                'final_ability': updated_session.get('final_ability', 0.0)
+            }
+            
             return Response({
-                'session': updated_session,
+                'session': formatted_session,
                 'completed': quiz_session.completed
             }, status=status.HTTP_200_OK)
             
@@ -417,8 +498,30 @@ class LearningPathView(APIView):
             
             # Serialize and return
             serializer = LearningPathSerializer(learning_path)
+            learning_path_data = serializer.data
+            
+            # Ensure milestones are properly formatted
+            if 'milestones' not in learning_path_data or not learning_path_data['milestones']:
+                milestones_list = list(learning_path.milestones.all())
+                learning_path_data['milestones'] = [
+                    {
+                        'id': m.id,
+                        'title': m.title,
+                        'description': m.description,
+                        'milestone_type': m.milestone_type,
+                        'order': m.order,
+                        'estimated_hours': m.estimated_hours,
+                        'resources': m.resources or [],
+                        'prerequisites': m.prerequisites or [],
+                        'skills_gained': m.skills_gained or [],
+                        'status': m.status,
+                        'progress_percentage': m.progress_percentage
+                    }
+                    for m in milestones_list
+                ]
+            
             return Response({
-                'learning_path': serializer.data,
+                'learning_path': learning_path_data,
                 'generation_details': path_data
             }, status=status.HTTP_201_CREATED)
             

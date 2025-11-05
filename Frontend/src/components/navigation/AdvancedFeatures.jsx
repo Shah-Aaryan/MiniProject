@@ -39,6 +39,30 @@ const AdvancedFeatures = () => {
       path: '/results'
     },
     {
+      id: 'portfolio-templates',
+      title: 'Portfolio & Templates',
+      description: 'Role-specific project templates with rubrics and README generation',
+      icon: ChartBarIcon,
+      color: 'from-indigo-500 to-blue-600',
+      path: '/portfolio'
+    },
+    {
+      id: 'assessments',
+      title: 'Skill Assessments',
+      description: 'Timed challenges with plagiarism/LLM detection, badges & certificates',
+      icon: AcademicCapIcon,
+      color: 'from-rose-500 to-pink-600',
+      path: '/assessments'
+    },
+    {
+      id: 'labor-market',
+      title: 'Labor Market Intelligence',
+      description: 'Salary bands, job trends, and skill gap analysis by role',
+      icon: ChartBarIcon,
+      color: 'from-teal-500 to-emerald-600',
+      path: '/labor-market'
+    },
+    {
       id: 'profile',
       title: 'User Profile',
       description: 'Manage your skills, preferences, and track your learning progress',

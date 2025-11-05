@@ -32,7 +32,7 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
   });
 
   useEffect(() => {
-    if (userId) {
+    if (userId && !Number.isNaN(Number(userId))) {
       fetchLearningPaths();
     }
   }, [userId]);
@@ -40,7 +40,7 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
   const fetchLearningPaths = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/learning-path/?user_id=${userId}`);
+      const response = await fetch(`http://localhost:8000/api/learning-path/?user_id=${Number(userId)}`);
       const data = await response.json();
       if (response.ok) {
         setLearningPaths(data.learning_paths || []);
@@ -78,7 +78,7 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
         },
         body: JSON.stringify({
           ...generationForm,
-          user_id: userId
+          user_id: Number(userId)
         })
       });
 

@@ -14,6 +14,10 @@ import EnhancedResults from "./components/pages/EnhancedResults";
 import AdaptiveQuiz from "./components/adaptiveQuiz/AdaptiveQuiz";
 import LearningPath from "./components/learningPath/LearningPath";
 import AdvancedFeatures from "./components/navigation/AdvancedFeatures";
+import PortfolioTemplates from "./components/pages/PortfolioTemplates";
+import Assessments from "./components/pages/Assessments";
+import LaborMarket from "./components/pages/LaborMarket";
+import Profile from "./components/pages/Profile";
 import "regenerator-runtime/runtime";
 
 
@@ -29,9 +33,13 @@ export default function App() {
         <Route path="/predict" element={<Predict />} />
         <Route path="/test-predict" element={<TestPredict />} />
         <Route path="/results" element={<EnhancedResults />} />
-        <Route path="/adaptive-quiz" element={<AdaptiveQuiz userId={localStorage.getItem('userId')} />} />
-        <Route path="/learning-path" element={<LearningPath userId={localStorage.getItem('userId')} />} />
+        <Route path="/adaptive-quiz" element={<AdaptiveQuiz userId={Number(localStorage.getItem('userId')) || null} />} />
+        <Route path="/learning-path" element={<LearningPath userId={Number(localStorage.getItem('userId')) || null} />} />
         <Route path="/features" element={<AdvancedFeatures />} />
+        <Route path="/portfolio" element={<PortfolioTemplates />} />
+        <Route path="/assessments" element={<Assessments />} />
+        <Route path="/labor-market" element={<LaborMarket />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/voice" element={<VoiceBot />} />
         <Route path="*" element={<NotFound />} />

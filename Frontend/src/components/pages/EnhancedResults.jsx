@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ExplainableAI from '../explainableAI/ExplainableAI';
@@ -9,7 +9,8 @@ import {
   LightBulbIcon,
   ArrowPathIcon,
   ShareIcon,
-  BookmarkIcon
+  BookmarkIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 
 const EnhancedResults = () => {
@@ -19,6 +20,39 @@ const EnhancedResults = () => {
   const [predictionData, setPredictionData] = useState(null);
   const [userId, setUserId] = useState(null);
   const [savedToProfile, setSavedToProfile] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState('');
+  const [loadingExplanation, setLoadingExplanation] = useState(false);
+
+  const fetchAIExplanation = useCallback(async (jobRole) => {
+    setLoadingExplanation(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/chat/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          message: `Can you provide a detailed explanation about the career path of ${jobRole}? Include information about what this role involves, required skills, career prospects, and opportunities.`
+        }),
+      });
+
+      const data = await response.json();
+      if (data.response && data.response.output_text) {
+        setAiExplanation(data.response.output_text);
+      } else {
+        setAiExplanation('Unable to fetch AI explanation at this time. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Error fetching AI explanation:', error);
+      setAiExplanation('Unable to fetch AI explanation at this time. Please try again later.');
+    } finally {
+      setLoadingExplanation(false);
+    }
+  }, []);
+
+  const handleNavigateToChat = () => {
+    navigate('/chat');
+  };
 
   useEffect(() => {
     // Get prediction data from navigation state or localStorage
@@ -39,7 +73,12 @@ const EnhancedResults = () => {
     if (storedUserId) {
       setUserId(parseInt(storedUserId));
     }
-  }, [location, navigate]);
+
+    // Fetch AI explanation for the predicted job
+    if (data && data.prediction) {
+      fetchAIExplanation(data.prediction);
+    }
+  }, [location, navigate, fetchAIExplanation]);
 
   const saveToProfile = async () => {
     if (!userId || !predictionData) return;
@@ -176,7 +215,7 @@ const EnhancedResults = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -191,6 +230,16 @@ const EnhancedResults = () => {
           <div className="font-medium">
             {savedToProfile ? 'Saved!' : 'Save to Profile'}
           </div>
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleNavigateToChat}
+          className="p-4 rounded-lg border-2 border-cyan-200 bg-cyan-50 text-cyan-700 hover:border-cyan-300 transition-all duration-300"
+        >
+          <ChatBubbleLeftRightIcon className="w-6 h-6 mx-auto mb-2" />
+          <div className="font-medium">Chat with AI</div>
         </motion.button>
 
         <motion.button
@@ -244,6 +293,50 @@ const EnhancedResults = () => {
           </div>
         </div>
       </div>
+
+      {/* AI Explanation Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-lg border border-indigo-200 shadow-md"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+            <LightBulbIcon className="w-7 h-7 text-yellow-600" />
+            AI Explanation: {predictionData.prediction}
+          </h3>
+          {loadingExplanation && (
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+          )}
+        </div>
+        
+        {loadingExplanation ? (
+          <div className="text-center py-8">
+            <div className="animate-pulse text-gray-600">
+              Generating AI explanation...
+            </div>
+          </div>
+        ) : aiExplanation ? (
+          <div className="prose max-w-none">
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {aiExplanation}
+            </p>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-600">
+              Unable to load AI explanation. 
+              <button
+                onClick={() => fetchAIExplanation(predictionData.prediction)}
+                className="text-indigo-600 hover:text-indigo-800 underline ml-2"
+              >
+                Try again
+              </button>
+            </p>
+          </div>
+        )}
+      </motion.div>
 
       {/* Next Steps */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg border border-green-200">

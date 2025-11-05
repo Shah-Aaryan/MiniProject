@@ -134,3 +134,54 @@ class MilestoneUpdateSerializer(serializers.Serializer):
     time_spent_minutes = serializers.IntegerField(min_value=0)
     notes = serializers.CharField(required=False, allow_blank=True)
     feedback = serializers.CharField(required=False, allow_blank=True)
+
+# ============================================================================
+# NEW FEATURES SERIALIZERS
+# ============================================================================
+
+from .models import (
+    ProjectTemplate, UserProject, Assessment, UserAssessment, Badge, UserBadge,
+    JobListing, SavedJobSearch, SavedJob, TailoredResume, ResumeTemplate,
+    UserResume, STARBullet, MentorProfile, MentorSession, MentorMatch,
+    CommunityPost, PeerReview, OfficeHours, JobTrend, SalaryBand, SkillGapAnalysis
+)
+
+class ProjectTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectTemplate
+        fields = '__all__'
+
+class UserProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProject
+        fields = '__all__'
+
+class AssessmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assessment
+        fields = '__all__'
+
+class UserAssessmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAssessment
+        fields = '__all__'
+
+class BadgeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Badge
+        fields = '__all__'
+
+class JobListingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobListing
+        fields = '__all__'
+
+class ResumeTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResumeTemplate
+        fields = '__all__'
+
+class UserResumeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserResume
+        fields = '__all__'

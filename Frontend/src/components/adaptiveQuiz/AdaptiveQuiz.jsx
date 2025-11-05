@@ -25,6 +25,10 @@ const AdaptiveQuiz = ({ userId, onComplete }) => {
       alert('Please select your experience level');
       return;
     }
+    if (!userId || Number.isNaN(Number(userId))) {
+      alert('Please sign in first.');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -34,7 +38,7 @@ const AdaptiveQuiz = ({ userId, onComplete }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: userId,
+          user_id: Number(userId),
           experience_level: experienceLevel
         })
       });
@@ -42,7 +46,7 @@ const AdaptiveQuiz = ({ userId, onComplete }) => {
       const data = await response.json();
       if (response.ok) {
         setCurrentSession(data.session);
-        setCurrentQuestion(data.session.current_question);
+        setCurrentQuestion(data.session.current_question || null);
         setQuizStarted(true);
         setProgress(0);
       } else {
@@ -60,6 +64,10 @@ const AdaptiveQuiz = ({ userId, onComplete }) => {
   const submitResponse = async () => {
     if (!response) {
       alert('Please provide a response');
+      return;
+    }
+    if (!currentSession?.session_id) {
+      alert('No active session. Start the quiz again.');
       return;
     }
 
@@ -97,7 +105,7 @@ const AdaptiveQuiz = ({ userId, onComplete }) => {
         } else {
           // Continue with next question
           setCurrentSession(data.session);
-          setCurrentQuestion(data.session.current_question);
+          setCurrentQuestion(data.session.current_question || null);
           setResponse('');
         }
       } else {
