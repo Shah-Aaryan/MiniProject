@@ -2,7 +2,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
 from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404
@@ -26,7 +26,8 @@ class QuizCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = QuizCategory.objects.all()
     serializer_class = QuizCategorySerializer
-    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+    permission_classes = [AllowAny]
     
     @action(detail=True, methods=['get'])
     def questions(self, request, pk=None):
@@ -60,7 +61,8 @@ class AdaptiveQuizViewSet(viewsets.ModelViewSet):
     ViewSet for managing adaptive quizzes.
     """
     serializer_class = AdaptiveQuizSerializer
-    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         """Return quizzes for the authenticated user"""
@@ -408,7 +410,8 @@ class UserSkillProfileViewSet(viewsets.ReadOnlyModelViewSet):
     Users can only view their own profile.
     """
     serializer_class = UserSkillProfileSerializer
-    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         """Return skill profile for the authenticated user"""

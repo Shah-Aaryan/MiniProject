@@ -123,28 +123,13 @@ class PredictionView(APIView):
             # Get the probability
             prediction_probability = model.predict_proba([encoded_data])
 
-            # Get the probability of the predicted class
-            predicted_class = prediction[0]
-            predicted_proba = prediction_probability[0][predicted_class]
-
-            # Map numeric prediction to actual job role name
-            job_role_mapping = {
-                0: 'Applications Developer',
-                1: 'CRM Technical Developer', 
-                2: 'Database Developer',
-                3: 'Mobile Applications Developer',
-                4: 'Network Security Engineer',
-                5: 'Software Developer',
-                6: 'Software Engineer',
-                7: 'Software Quality Assurance (QA) / Testing',
-                8: 'Systems Security Administrator',
-                9: 'Technical Support',
-                10: 'UX Designer',
-                11: 'Web Developer'
-            }
-
-            # Get the actual job role name
-            predicted_role = job_role_mapping.get(predicted_class, 'Unknown Role')
+            # Get the predicted class (now returns string directly)
+            predicted_role = prediction[0]
+            
+            # Get class index for probability
+            classes = model.classes_
+            predicted_class_idx = list(classes).index(predicted_role)
+            predicted_proba = prediction_probability[0][predicted_class_idx]
             
             # Calculate confidence percentage
             confidence_percentage = round(predicted_proba * 100, 2)
@@ -153,7 +138,7 @@ class PredictionView(APIView):
             explainable_ai = ExplainableAI()
             
             # Get feature importance
-            feature_importance = explainable_ai.get_feature_importance(encoded_data, predicted_class)
+            feature_importance = explainable_ai.get_feature_importance(encoded_data, predicted_class_idx)
             
             # Get counterfactual tips
             counterfactual_tips = explainable_ai.generate_counterfactual_tips(encoded_data)
@@ -184,7 +169,7 @@ class PredictionView(APIView):
                 'prediction': predicted_role,
                 'probability': predicted_proba,
                 'confidence_percentage': confidence_percentage,
-                'prediction_code': predicted_class,
+                'prediction_code': predicted_class_idx,
                 'explainable_ai': {
                     'feature_importance': feature_importance,
                     'counterfactual_tips': counterfactual_tips,
@@ -367,33 +352,60 @@ class AdaptiveQuizView(APIView):
 
 class LearningPathView(APIView):
     """Generate and manage personalized learning paths"""
+    authentication_classes = []
+    permission_classes = [AllowAny]
     
     def post(self, request, *args, **kwargs):
         """Generate a new learning path"""
         try:
-            serializer = LearningPathGenerationSerializer(data=request.data)
-            if not serializer.is_valid():
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            print(f"Learning path request data: {request.data}")
             
             user_id = request.data.get('user_id')
             if not user_id:
                 return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
             
-            user = UserModel.objects.get(id=user_id)
+            print(f"Looking for user with ID: {user_id}")
+            
+            try:
+                user = UserModel.objects.get(id=user_id)
+                print(f"Found user: {user.email}")
+            except UserModel.DoesNotExist:
+                print(f"User with ID {user_id} not found in database")
+                # List all users for debugging
+                all_users = UserModel.objects.all().values_list('id', 'email')
+                print(f"Available users: {list(all_users)}")
+                return Response({'error': f'User with ID {user_id} not found. Please sign in again.'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Extract data with defaults
+            target_role = request.data.get('target_role')
+            if not target_role:
+                return Response({'error': 'Target role required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            current_skills = request.data.get('current_skills', {})
+            experience_level = request.data.get('experience_level', 'beginner')
+            preferences = request.data.get('preferences', {})
+            
+            # Validate experience level
+            valid_levels = ['beginner', 'intermediate', 'advanced']
+            if experience_level not in valid_levels:
+                experience_level = 'beginner'
             
             # Initialize learning path generator
             path_generator = LearningPathGenerator()
             
             # Generate learning path
+            print(f"Generating path for: {target_role}, level: {experience_level}")
             path_data = path_generator.generate_learning_path(
-                target_role=serializer.validated_data['target_role'],
-                current_skills=serializer.validated_data['current_skills'],
-                experience_level=serializer.validated_data['experience_level'],
-                preferences=serializer.validated_data.get('preferences', {})
+                target_role=target_role,
+                current_skills=current_skills,
+                experience_level=experience_level,
+                preferences=preferences
             )
             
             if 'error' in path_data:
                 return Response(path_data, status=status.HTTP_400_BAD_REQUEST)
+            
+            print(f"Path data generated with {len(path_data.get('milestones', []))} milestones")
             
             # Create learning path in database
             learning_path = LearningPath.objects.create(
@@ -405,30 +417,46 @@ class LearningPathView(APIView):
             )
             
             # Create milestones
+            milestones_created = 0
             for milestone_data in path_data['milestones']:
-                LearningMilestone.objects.create(
-                    learning_path=learning_path,
-                    title=milestone_data['title'],
-                    description=milestone_data['description'],
-                    milestone_type=milestone_data['milestone_type'],
-                    order=milestone_data['order'],
-                    estimated_hours=milestone_data['estimated_hours'],
-                    resources=milestone_data.get('resources', []),
-                    prerequisites=milestone_data.get('prerequisites', []),
-                    skills_gained=milestone_data.get('skills_covered', [])
-                )
+                try:
+                    LearningMilestone.objects.create(
+                        learning_path=learning_path,
+                        title=milestone_data.get('title', 'Untitled Milestone'),
+                        description=milestone_data.get('description', ''),
+                        milestone_type=milestone_data.get('milestone_type', 'course'),
+                        order=milestone_data.get('order', 1),
+                        estimated_hours=milestone_data.get('estimated_hours', 10),
+                        resources=milestone_data.get('resources', []),
+                        prerequisites=milestone_data.get('prerequisites', []),
+                        skills_gained=milestone_data.get('skills_covered', [])
+                    )
+                    milestones_created += 1
+                except Exception as me:
+                    print(f"Error creating milestone: {str(me)}")
+                    continue
+            
+            print(f"Created {milestones_created} milestones")
             
             # Serialize and return
             serializer = LearningPathSerializer(learning_path)
             return Response({
+                'success': True,
                 'learning_path': serializer.data,
-                'generation_details': path_data
+                'generation_details': {
+                    'milestones_count': milestones_created,
+                    'estimated_weeks': path_data['estimated_duration_weeks'],
+                    'skill_gaps': path_data.get('skill_gaps_identified', 0)
+                }
             }, status=status.HTTP_201_CREATED)
             
         except UserModel.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print(f"Learning path error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({'error': str(e), 'details': 'Check server logs for more information'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def get(self, request, *args, **kwargs):
         """Get user's learning paths"""
@@ -437,21 +465,21 @@ class LearningPathView(APIView):
             if not user_id:
                 return Response({'error': 'User ID required'}, status=status.HTTP_400_BAD_REQUEST)
             
-            user = UserModel.objects.get(id=user_id)
-            learning_paths = LearningPath.objects.filter(user=user)
-            
+            learning_paths = LearningPath.objects.filter(user_id=user_id).prefetch_related('milestones').order_by('-created_at')
             serializer = LearningPathSerializer(learning_paths, many=True)
+            
             return Response({
                 'learning_paths': serializer.data
             }, status=status.HTTP_200_OK)
             
-        except UserModel.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
+            print(f"Error fetching learning paths: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class MilestoneProgressView(APIView):
     """Track and update milestone progress"""
+    authentication_classes = []
+    permission_classes = [AllowAny]
     
     def post(self, request, *args, **kwargs):
         """Update milestone progress"""
@@ -555,6 +583,8 @@ class MilestoneProgressView(APIView):
 
 class UserProfileView(APIView):
     """Manage user profiles and experience levels"""
+    authentication_classes = []
+    permission_classes = [AllowAny]
     
     def post(self, request, *args, **kwargs):
         """Create or update user profile"""
@@ -608,6 +638,8 @@ class UserProfileView(APIView):
 
 class ReminderView(APIView):
     """Manage user reminders and notifications"""
+    authentication_classes = []
+    permission_classes = [AllowAny]
     
     def post(self, request, *args, **kwargs):
         """Create a new reminder"""

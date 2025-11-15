@@ -52,23 +52,23 @@ plotly>=5.0.0
 # ===============================
 scikit-learn
 scipy
-torch
-transformers
-nltk
 joblib
+# torch  # Commented - Heavy package, only if needed for custom ML models
+# transformers  # Commented - Only needed for advanced NLP
+nltk  # Required for sentiment analysis
 regex
-tqdm
-faiss-cpu
-langchain
-langchain-community
-langchain-core
-langchain-google-genai
-langchain-text-splitters
-langsmith
-google-generativeai
-google-ai-generativelanguage
-huggingface-hub
-safetensors
+# tqdm  # Optional - progress bars
+# faiss-cpu  # Removed - No longer using RAG/Vector DB
+# langchain  # Removed - Using direct Google Gen AI
+# langchain-community  # Removed - Not needed
+# langchain-core  # Removed - Not needed
+# langchain-google-genai  # Removed - Using direct API
+# langchain-text-splitters  # Removed - Not needed
+# langsmith  # Removed - Not needed
+google-generativeai  # ← MAIN AI PACKAGE (Required)
+# google-ai-generativelanguage  # Included with google-generativeai
+# huggingface-hub  # Commented - Only if using HF models
+# safetensors  # Commented - Only if using specific model formats
 
 # ===============================
 # Google & Cloud Dependencies
@@ -123,7 +123,7 @@ psycopg
 SpeechRecognition
 pyttsx3
 PyPDF2
-comtypes
+# comtypes  # Windows-only - not needed on macOS
 
 # ===============================
 # Network & HTTP Libraries
@@ -144,6 +144,5 @@ yarl
 sympy
 mpmath
 networkx
-mkl
 tenacity
 threadpoolctl
