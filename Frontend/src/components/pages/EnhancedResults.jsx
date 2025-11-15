@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ExplainableAI from '../explainableAI/ExplainableAI';
 import LearningPath from '../learningPath/LearningPath';
+import { styles } from '../../styles';
 import { 
   ChartBarIcon, 
   AcademicCapIcon, 
@@ -250,10 +251,10 @@ const EnhancedResults = () => {
 
   if (!predictionData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your results...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Loading your results...</p>
         </div>
       </div>
     );
@@ -266,8 +267,8 @@ const EnhancedResults = () => {
       onClick={() => onClick(id)}
       className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
         isActive 
-          ? 'bg-blue-600 text-white shadow-lg' 
-          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+          ? 'bg-red-600 text-white shadow-lg' 
+          : 'bg-transparent text-white hover:bg-gray-900 border border-white/20 hover:border-white/40'
       }`}
     >
       <Icon className="w-5 h-5" />
@@ -282,35 +283,37 @@ const EnhancedResults = () => {
       className="space-y-6"
     >
       {/* Main Result Card */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-2xl shadow-xl">
+      <div className="bg-gradient-to-r from-red-600 to-indigo-600 text-white p-8 rounded-2xl shadow-xl border border-white/20">
         <div className="text-center">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring" }}
-            className="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-6"
+            className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6"
           >
             <span className="text-4xl">🎯</span>
           </motion.div>
           
-          <h1 className="text-3xl font-bold mb-2">Your Predicted Career Path</h1>
-          <h2 className="text-4xl font-bold mb-4">{predictionData.prediction}</h2>
+          <h1 className="text-2xl font-semibold mb-2 text-white">Your Predicted Career Path</h1>
+          <h2 className="text-5xl font-bold mb-6 text-white">
+            {predictionData.prediction}
+          </h2>
           
-          <div className="flex items-center justify-center space-x-2 mb-6">
-            <div className="text-2xl font-bold">{predictionData.confidence_percentage}%</div>
-            <div className="text-lg opacity-90">Confidence</div>
+          <div className="flex items-center justify-center space-x-3 mb-6">
+            <div className="text-4xl font-bold text-white">{predictionData.confidence_percentage}%</div>
+            <div className="text-xl text-white/90">Confidence</div>
           </div>
           
-          <div className="w-full bg-white bg-opacity-20 rounded-full h-3 mb-6">
+          <div className="w-full max-w-md mx-auto bg-white/20 rounded-full h-4 mb-6">
             <motion.div 
-              className="bg-white h-3 rounded-full"
+              className="bg-white h-4 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${predictionData.confidence_percentage}%` }}
               transition={{ delay: 0.5, duration: 1 }}
             ></motion.div>
           </div>
           
-          <p className="text-lg opacity-90">
+          <p className="text-lg text-white/90 max-w-2xl mx-auto">
             Based on your responses, this career path aligns well with your skills and interests.
           </p>
         </div>
@@ -324,8 +327,8 @@ const EnhancedResults = () => {
           onClick={saveToProfile}
           className={`p-4 rounded-lg border-2 transition-all duration-300 ${
             savedToProfile 
-              ? 'border-green-500 bg-green-50 text-green-700' 
-              : 'border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-300'
+              ? 'border-green-500 bg-green-500/20 text-green-400' 
+              : 'border-white/20 bg-transparent text-white hover:bg-indigo-600 hover:border-indigo-600'
           }`}
         >
           <BookmarkIcon className="w-6 h-6 mx-auto mb-2" />
@@ -338,7 +341,7 @@ const EnhancedResults = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={shareResults}
-          className="p-4 rounded-lg border-2 border-purple-200 bg-purple-50 text-purple-700 hover:border-purple-300 transition-all duration-300"
+          className="p-4 rounded-lg border-2 border-white/20 bg-transparent text-white hover:bg-indigo-600 hover:border-indigo-600 transition-all duration-300"
         >
           <ShareIcon className="w-6 h-6 mx-auto mb-2" />
           <div className="font-medium">Share Results</div>
@@ -348,7 +351,7 @@ const EnhancedResults = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={retakeQuiz}
-          className="p-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 transition-all duration-300"
+          className="p-4 rounded-lg border-2 border-white/20 bg-transparent text-white hover:bg-red-600 hover:border-red-600 transition-all duration-300"
         >
           <ArrowPathIcon className="w-6 h-6 mx-auto mb-2" />
           <div className="font-medium">Retake Quiz</div>
@@ -357,31 +360,31 @@ const EnhancedResults = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-transparent border border-white/20 p-6 rounded-xl hover:border-white/40 transition-all duration-300">
           <div className="text-center">
-            <ChartBarIcon className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-800">{predictionData.confidence_percentage}%</div>
-            <div className="text-gray-600">Prediction Confidence</div>
+            <ChartBarIcon className="w-8 h-8 text-white mx-auto mb-2" />
+            <div className="text-3xl font-bold text-white mb-1">{predictionData.confidence_percentage}%</div>
+            <div className="text-white/70 text-sm">Prediction Confidence</div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-transparent border border-white/20 p-6 rounded-xl hover:border-white/40 transition-all duration-300">
           <div className="text-center">
-            <LightBulbIcon className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-800">
+            <LightBulbIcon className="w-8 h-8 text-white mx-auto mb-2" />
+            <div className="text-3xl font-bold text-white mb-1">
               {predictionData.explainable_ai?.counterfactual_tips?.length || 0}
             </div>
-            <div className="text-gray-600">Improvement Tips</div>
+            <div className="text-white/70 text-sm">Improvement Tips</div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-transparent border border-white/20 p-6 rounded-xl hover:border-white/40 transition-all duration-300">
           <div className="text-center">
-            <AcademicCapIcon className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-800">
+            <AcademicCapIcon className="w-8 h-8 text-white mx-auto mb-2" />
+            <div className="text-3xl font-bold text-white mb-1">
               {Object.keys(predictionData.explainable_ai?.feature_importance?.feature_importance || {}).length}
             </div>
-            <div className="text-gray-600">Skills Analyzed</div>
+            <div className="text-white/70 text-sm">Skills Analyzed</div>
           </div>
         </div>
       </div>
@@ -489,28 +492,31 @@ const EnhancedResults = () => {
       )}
 
       {/* Next Steps */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg border border-green-200">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">🚀 Recommended Next Steps</h3>
-        <div className="space-y-3">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+      <div className="bg-transparent border border-white/20 p-6 rounded-xl">
+        <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+          <span className="mr-2">🚀</span>
+          Recommended Next Steps
+        </h3>
+        <div className="space-y-4">
+          <div className="flex items-start space-x-4 p-3 rounded-lg bg-transparent border border-white/10 hover:border-white/30 transition-colors">
+            <div className="w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">1</div>
             <div>
-              <div className="font-medium">Explore the AI Explanation</div>
-              <div className="text-sm text-gray-600">Understand why this career was recommended for you</div>
+              <div className="font-medium text-white mb-1">Explore the AI Explanation</div>
+              <div className="text-sm text-white/70">Understand why this career was recommended for you</div>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+          <div className="flex items-start space-x-4 p-3 rounded-lg bg-transparent border border-white/10 hover:border-white/30 transition-colors">
+            <div className="w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">2</div>
             <div>
-              <div className="font-medium">Review Improvement Tips</div>
-              <div className="text-sm text-gray-600">See specific ways to strengthen your profile</div>
+              <div className="font-medium text-white mb-1">Review Improvement Tips</div>
+              <div className="text-sm text-white/70">See specific ways to strengthen your profile</div>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+          <div className="flex items-start space-x-4 p-3 rounded-lg bg-transparent border border-white/10 hover:border-white/30 transition-colors">
+            <div className="w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">3</div>
             <div>
-              <div className="font-medium">Generate Learning Path</div>
-              <div className="text-sm text-gray-600">Get a personalized roadmap to achieve your career goals</div>
+              <div className="font-medium text-white mb-1">Generate Learning Path</div>
+              <div className="text-sm text-white/70">Get a personalized roadmap to achieve your career goals</div>
             </div>
           </div>
         </div>
@@ -519,14 +525,14 @@ const EnhancedResults = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="min-h-screen bg-black">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <motion.h1 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-bold text-gray-800 mb-2"
+            className={styles.sectionHeadText}
           >
             Career Prediction Results
           </motion.h1>
@@ -534,7 +540,7 @@ const EnhancedResults = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-gray-600"
+            className="text-white/70 text-lg mt-4"
           >
             Comprehensive analysis of your career prediction with AI-powered insights
           </motion.p>
@@ -592,17 +598,17 @@ const EnhancedResults = () => {
             )}
             
             {activeTab === 'learning' && !userId && (
-              <div className="text-center py-12">
-                <AcademicCapIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">Sign In Required</h3>
-                <p className="text-gray-600 mb-6">
+              <div className="text-center py-12 bg-transparent border border-white/20 rounded-xl p-8">
+                <AcademicCapIcon className="w-16 h-16 text-white mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">Sign In Required</h3>
+                <p className="text-white/70 mb-6 max-w-md mx-auto">
                   Please sign in to access personalized learning paths and track your progress.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => navigate('/signin')}
-                  className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-8 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-bold"
                 >
                   Sign In
                 </motion.button>
