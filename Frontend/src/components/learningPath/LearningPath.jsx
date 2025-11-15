@@ -18,6 +18,7 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
   const [milestones, setMilestones] = useState([]);
   const [progressData, setProgressData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [showGenerator, setShowGenerator] = useState(false);
   const [generationForm, setGenerationForm] = useState({
     target_role: targetRole || '',
@@ -31,7 +32,21 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
     }
   });
 
+  // Auto-show generator if no paths exist and we have target role
   useEffect(() => {
+    if (targetRole && learningPaths.length === 0 && !loading) {
+      setShowGenerator(true);
+    }
+  }, [targetRole, learningPaths.length, loading]);
+
+  useEffect(() => {
+    // Validate userId on mount
+    if (!userId) {
+      console.warn('LearningPath: No userId provided. User may need to sign in.');
+      setError('Please sign in to access learning paths.');
+      return;
+    }
+    
     if (userId) {
       fetchLearningPaths();
     }
@@ -39,18 +54,35 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
 
   const fetchLearningPaths = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`http://localhost:8000/api/learning-path/?user_id=${userId}`);
+      const response = await fetch(`http://127.0.0.1:8000/api/learning-path/?user_id=${userId}`);
       const data = await response.json();
       if (response.ok) {
-        setLearningPaths(data.learning_paths || []);
-        if (data.learning_paths?.length > 0) {
-          setSelectedPath(data.learning_paths[0]);
-          fetchMilestoneProgress(data.learning_paths[0].id);
+        // Remove duplicates by ID
+        const uniquePaths = [];
+        const seenIds = new Set();
+        (data.learning_paths || []).forEach(path => {
+          if (!seenIds.has(path.id)) {
+            seenIds.add(path.id);
+            uniquePaths.push(path);
+          }
+        });
+        
+        setLearningPaths(uniquePaths);
+        if (uniquePaths.length > 0) {
+          // Set selected path to first one or keep current selection if it exists
+          const currentSelected = selectedPath?.id;
+          const pathToSelect = uniquePaths.find(p => p.id === currentSelected) || uniquePaths[0];
+          setSelectedPath(pathToSelect);
+          fetchMilestoneProgress(pathToSelect.id);
         }
+      } else {
+        setError(data.error || 'Failed to fetch learning paths');
       }
     } catch (error) {
       console.error('Error fetching learning paths:', error);
+      setError('Network error. Please check if the backend is running.');
     } finally {
       setLoading(false);
     }
@@ -58,10 +90,29 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
 
   const fetchMilestoneProgress = async (pathId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/milestone-progress/?learning_path_id=${pathId}&user_id=${userId}`);
+      console.log('Fetching progress for path:', pathId);
+      const response = await fetch(`http://127.0.0.1:8000/api/milestone-progress/?learning_path_id=${pathId}&user_id=${userId}`);
       const data = await response.json();
-      if (response.ok) {
-        setProgressData(data.progress_summary || {});
+      console.log('Progress data received:', data);
+      
+      if (response.ok && data.progress_summary) {
+        // Transform array to object keyed by milestone ID
+        const progressMap = {};
+        
+        if (Array.isArray(data.progress_summary)) {
+          data.progress_summary.forEach(item => {
+            if (item.milestone && item.milestone.id) {
+              // Store the entire milestone data with updated progress
+              progressMap[item.milestone.id] = {
+                milestone: item.milestone,
+                latest_progress: item.latest_progress
+              };
+            }
+          });
+        }
+        
+        setProgressData(progressMap);
+        console.log('Progress map created:', progressMap);
       }
     } catch (error) {
       console.error('Error fetching milestone progress:', error);
@@ -71,29 +122,75 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
   const generateLearningPath = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/learning-path/', {
+      // Prepare the request with proper structure
+      const requestData = {
+        user_id: userId,
+        target_role: generationForm.target_role || targetRole,
+        experience_level: generationForm.experience_level || 'beginner',
+        current_skills: generationForm.current_skills || currentSkills || {},
+        preferences: {
+          learning_intensity: generationForm.preferences?.learning_intensity || 'moderate',
+          hours_per_week: generationForm.preferences?.hours_per_week || 10,
+          preferred_types: generationForm.preferences?.preferred_types || ['course', 'project'],
+          cost_preference: generationForm.preferences?.cost_preference || 'any'
+        }
+      };
+
+      // Validate userId
+      if (!requestData.user_id) {
+        setError('User ID is missing. Please sign in again.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('Generating learning path with:', requestData);
+
+      const response = await fetch('http://127.0.0.1:8000/api/learning-path/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...generationForm,
-          user_id: userId
-        })
+        body: JSON.stringify(requestData)
       });
 
       const data = await response.json();
-      if (response.ok) {
-        setLearningPaths(prev => [data.learning_path, ...prev]);
-        setSelectedPath(data.learning_path);
-        setShowGenerator(false);
-        fetchMilestoneProgress(data.learning_path.id);
+      console.log('Learning path response:', data);
+      
+      if (response.ok && data.success) {
+        if (data.learning_path) {
+          // Check if path already exists to prevent duplicates
+          setLearningPaths(prev => {
+            const existingIndex = prev.findIndex(p => p.id === data.learning_path.id);
+            if (existingIndex >= 0) {
+              // Update existing path
+              const updated = [...prev];
+              updated[existingIndex] = data.learning_path;
+              return updated;
+            }
+            // Add new path
+            return [data.learning_path, ...prev];
+          });
+          setSelectedPath(data.learning_path);
+          setShowGenerator(false);
+          setError(null);
+          if (data.learning_path.id) {
+            fetchMilestoneProgress(data.learning_path.id);
+          }
+          // Show success message
+          setTimeout(() => {
+            alert(`✅ Learning path created!\n\n📚 ${data.generation_details?.milestones_count || 0} milestones\n⏱️ ${data.generation_details?.estimated_weeks || 0} weeks\n🎯 ${data.generation_details?.skill_gaps || 0} skill gaps identified`);
+          }, 100);
+        } else {
+          setError('Learning path created but no data returned');
+        }
       } else {
-        alert('Failed to generate learning path: ' + (data.error || 'Unknown error'));
+        const errorMsg = data.error || data.message || 'Unknown error';
+        console.error('Error response:', data);
+        setError(`Failed to generate: ${errorMsg}`);
       }
     } catch (error) {
       console.error('Error generating learning path:', error);
-      alert('Network error. Please try again.');
+      setError(`Network error: ${error.message}. Please check if the backend server is running.`);
     } finally {
       setLoading(false);
     }
@@ -101,7 +198,9 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
 
   const updateMilestoneProgress = async (milestoneId, progressData) => {
     try {
-      const response = await fetch('http://localhost:8000/api/milestone-progress/', {
+      console.log('Updating milestone:', milestoneId, 'with data:', progressData);
+      
+      const response = await fetch('http://127.0.0.1:8000/api/milestone-progress/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,12 +212,47 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
         })
       });
 
-      if (response.ok) {
-        // Refresh progress data
-        fetchMilestoneProgress(selectedPath.id);
+      const result = await response.json();
+      console.log('Progress update response:', result);
+
+      if (response.ok && result.success) {
+        // Use the milestone data from backend response
+        const updatedMilestone = result.milestone;
+        
+        // Update milestone in selectedPath with backend data
+        if (selectedPath && selectedPath.milestones) {
+          const updatedMilestones = selectedPath.milestones.map(m => {
+            if (m.id === milestoneId) {
+              return {
+                ...m,
+                ...updatedMilestone,
+                progress_percentage: updatedMilestone.progress_percentage,
+                status: updatedMilestone.status
+              };
+            }
+            return m;
+          });
+          
+          setSelectedPath(prev => ({ ...prev, milestones: updatedMilestones }));
+          
+          // Also update learningPaths state to persist changes
+          setLearningPaths(prevPaths => 
+            prevPaths.map(path => 
+              path.id === selectedPath.id 
+                ? { ...path, milestones: updatedMilestones }
+                : path
+            )
+          );
+        }
+        
+        return true;
+      } else {
+        console.error('Update failed:', result);
+        return false;
       }
     } catch (error) {
       console.error('Error updating milestone progress:', error);
+      return false;
     }
   };
 
@@ -160,12 +294,27 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
 
   const MilestoneCard = ({ milestone, progress }) => {
     const [showDetails, setShowDetails] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    
+    // Get the actual progress percentage from either the progress object or milestone
+    const currentProgress = milestone?.progress_percentage || 0;
+    
     const [progressForm, setProgressForm] = useState({
-      progress_percentage: progress?.completion_percentage || 0,
+      progress_percentage: currentProgress,
       time_spent_minutes: 0,
       notes: '',
       feedback: ''
     });
+
+    // Update progressForm when milestone changes
+    useEffect(() => {
+      const newProgress = milestone?.progress_percentage || 0;
+      setProgressForm(prev => ({
+        ...prev,
+        progress_percentage: newProgress
+      }));
+    }, [milestone?.progress_percentage, milestone?.id]);
 
     const IconComponent = getMilestoneIcon(milestone.milestone_type);
 
@@ -264,16 +413,46 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                const newProgress = Math.min(100, (milestone.progress_percentage || 0) + 25);
-                updateMilestoneProgress(milestone.id, {
+              onClick={async () => {
+                setIsUpdating(true);
+                const newProgress = Math.min(100, progressForm.progress_percentage + 25);
+                const updatedForm = {
                   progress_percentage: newProgress,
-                  time_spent_minutes: 30
-                });
+                  time_spent_minutes: progressForm.time_spent_minutes + 30
+                };
+                console.log('Quick update button clicked:', { milestoneId: milestone.id, updatedForm });
+                setProgressForm(prev => ({ ...prev, ...updatedForm }));
+                const success = await updateMilestoneProgress(milestone.id, updatedForm);
+                setIsUpdating(false);
+                if (success) {
+                  setShowSuccess(true);
+                  setTimeout(() => setShowSuccess(false), 2000);
+                } else {
+                  alert('Failed to update progress. Please try again.');
+                }
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              disabled={isUpdating}
+              className={`px-4 py-2 rounded-lg transition-all text-sm flex items-center justify-center ${
+                isUpdating 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : showSuccess
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              } text-white`}
             >
-              Update Progress
+              {isUpdating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Updating...
+                </>
+              ) : showSuccess ? (
+                <>
+                  <CheckCircleIcon className="w-4 h-4 mr-1" />
+                  Updated!
+                </>
+              ) : (
+                '+25% Progress'
+              )}
             </motion.button>
           )}
         </div>
@@ -370,10 +549,45 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => updateMilestoneProgress(milestone.id, progressForm)}
-                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    onClick={async () => {
+                      setIsUpdating(true);
+                      console.log('Save progress button clicked:', { milestoneId: milestone.id, progressForm });
+                      const success = await updateMilestoneProgress(milestone.id, progressForm);
+                      setIsUpdating(false);
+                      if (success) {
+                        setShowSuccess(true);
+                        setTimeout(() => {
+                          setShowSuccess(false);
+                          setShowDetails(false);
+                        }, 1500);
+                      } else {
+                        alert('Failed to save progress. Please try again.');
+                      }
+                    }}
+                    disabled={isUpdating}
+                    className={`w-full px-4 py-2 rounded-lg transition-all text-sm flex items-center justify-center ${
+                      isUpdating
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : showSuccess
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    } text-white`}
                   >
-                    Save Progress
+                    {isUpdating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Saving...
+                      </>
+                    ) : showSuccess ? (
+                      <>
+                        <CheckCircleIcon className="w-4 h-4 mr-2" />
+                        Saved Successfully!
+                      </>
+                    ) : (
+                      <>
+                        💾 Save Progress
+                      </>
+                    )}
                   </motion.button>
                 </div>
               </div>
@@ -390,11 +604,22 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white p-6 rounded-lg shadow-lg"
     >
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Generate Learning Path</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-2">Generate Learning Path</h2>
+      <p className="text-gray-600 mb-6">
+        Create a personalized roadmap to achieve your career goal: <span className="font-semibold text-blue-600">{targetRole || 'Your Target Role'}</span>
+      </p>
+      
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-800 text-sm">{error}</p>
+        </div>
+      )}
       
       <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Target Role</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Target Role <span className="text-red-500">*</span>
+          </label>
           <input
             type="text"
             value={generationForm.target_role}
@@ -402,9 +627,13 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
               ...prev,
               target_role: e.target.value
             }))}
-            className="w-full p-3 border border-gray-200 rounded-lg"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="e.g., Software Developer, Data Scientist..."
+            required
           />
+          {!generationForm.target_role && (
+            <p className="text-xs text-red-500 mt-1">Target role is required</p>
+          )}
         </div>
 
         <div>
@@ -424,40 +653,86 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">Current Skills</label>
-          <div className="space-y-4">
-            {Object.entries(generationForm.current_skills).map(([skill, value]) => (
-              <SkillInput
-                key={skill}
-                skill={skill}
-                value={value}
-                onChange={(skill, value) => setGenerationForm(prev => ({
-                  ...prev,
-                  current_skills: {
-                    ...prev.current_skills,
-                    [skill]: value
-                  }
-                }))}
-              />
-            ))}
-            
-            <button
-              onClick={() => {
-                const newSkill = prompt('Enter skill name:');
-                if (newSkill) {
-                  setGenerationForm(prev => ({
-                    ...prev,
-                    current_skills: {
-                      ...prev.current_skills,
-                      [newSkill]: 0
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Current Skills (Rate your proficiency 0-10)
+          </label>
+          <p className="text-xs text-gray-500 mb-4">
+            Help us understand your starting point to create a personalized path
+          </p>
+          <div className="space-y-4 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-4">
+            {Object.keys(generationForm.current_skills).length === 0 ? (
+              <div className="text-center py-4">
+                <p className="text-gray-500 text-sm mb-2">No skills added yet</p>
+                <button
+                  onClick={() => {
+                    const newSkill = prompt('Enter skill name:');
+                    if (newSkill) {
+                      setGenerationForm(prev => ({
+                        ...prev,
+                        current_skills: {
+                          ...prev.current_skills,
+                          [newSkill]: 5
+                        }
+                      }));
                     }
-                  }));
-                }
-              }}
-              className="text-blue-600 text-sm hover:text-blue-700"
-            >
-              + Add Skill
-            </button>
+                  }}
+                  className="text-blue-600 text-sm hover:text-blue-700 font-medium"
+                >
+                  + Add Your First Skill
+                </button>
+              </div>
+            ) : (
+              <>
+                {Object.entries(generationForm.current_skills).map(([skill, value]) => (
+                  <div key={skill} className="flex items-center space-x-2">
+                    <div className="flex-1">
+                      <SkillInput
+                        skill={skill}
+                        value={value}
+                        onChange={(skill, value) => setGenerationForm(prev => ({
+                          ...prev,
+                          current_skills: {
+                            ...prev.current_skills,
+                            [skill]: value
+                          }
+                        }))}
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        setGenerationForm(prev => {
+                          const skills = { ...prev.current_skills };
+                          delete skills[skill];
+                          return { ...prev, current_skills: skills };
+                        });
+                      }}
+                      className="text-red-500 hover:text-red-700 text-sm px-2"
+                      title="Remove skill"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                
+                <button
+                  onClick={() => {
+                    const newSkill = prompt('Enter skill name:');
+                    if (newSkill && newSkill.trim()) {
+                      setGenerationForm(prev => ({
+                        ...prev,
+                        current_skills: {
+                          ...prev.current_skills,
+                          [newSkill.trim()]: 5
+                        }
+                      }));
+                    }
+                  }}
+                  className="w-full text-blue-600 text-sm hover:text-blue-700 py-2 border-t border-gray-200 mt-2 pt-4"
+                >
+                  + Add Another Skill
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -498,12 +773,26 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
           </div>
         </div>
 
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold text-blue-900 mb-2">What you'll get:</h4>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>✅ Personalized milestones based on your skill level</li>
+            <li>✅ Curated learning resources (courses, projects, certifications)</li>
+            <li>✅ Estimated timeline to achieve your goal</li>
+            <li>✅ Progress tracking and reminders</li>
+          </ul>
+        </div>
+
         <div className="flex space-x-4">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setShowGenerator(false)}
+            onClick={() => {
+              setShowGenerator(false);
+              setError(null);
+            }}
             className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            disabled={loading}
           >
             Cancel
           </motion.button>
@@ -513,13 +802,20 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
             whileTap={{ scale: 0.98 }}
             onClick={generateLearningPath}
             disabled={loading || !generationForm.target_role}
-            className={`flex-1 px-6 py-3 rounded-lg transition-colors ${
+            className={`flex-1 px-6 py-3 rounded-lg transition-colors flex items-center justify-center ${
               loading || !generationForm.target_role
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
           >
-            {loading ? 'Generating...' : 'Generate Path'}
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Generating...
+              </>
+            ) : (
+              '🚀 Generate Path'
+            )}
           </motion.button>
         </div>
       </div>
@@ -556,32 +852,75 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
         </motion.button>
       </div>
 
-      {loading && (
+      {!userId && (
+        <div className="mb-6 p-6 bg-yellow-50 border-2 border-yellow-200 rounded-lg text-center">
+          <div className="text-yellow-600 text-5xl mb-4">🔐</div>
+          <h3 className="text-xl font-semibold text-yellow-800 mb-2">Sign In Required</h3>
+          <p className="text-yellow-700 mb-4">
+            Please sign in to access personalized learning paths and track your progress.
+          </p>
+          <a 
+            href="/signin" 
+            className="inline-block px-6 py-2 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition"
+          >
+            Sign In
+          </a>
+        </div>
+      )}
+
+      {userId && loading && (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="text-gray-600 mt-4">Loading learning paths...</p>
         </div>
       )}
 
-      {!loading && learningPaths.length === 0 && (
-        <div className="text-center py-12">
+      {userId && error && !loading && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+          <div className="flex-shrink-0 text-red-500 mr-3">⚠️</div>
+          <div className="flex-1">
+            <h4 className="font-semibold text-red-800 mb-1">Error</h4>
+            <p className="text-red-700 text-sm">{error}</p>
+            {error.includes('User not found') && (
+              <p className="text-red-600 text-xs mt-2">
+                Try signing out and signing in again.
+              </p>
+            )}
+          </div>
+          <button 
+            onClick={() => setError(null)}
+            className="text-red-500 hover:text-red-700"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {userId && !loading && !error && learningPaths.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
           <BookOpenIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">No Learning Paths Yet</h3>
           <p className="text-gray-600 mb-6">
             Create your first personalized learning path to get started on your career journey.
           </p>
+          {targetRole && (
+            <p className="text-sm text-blue-600 mb-6">
+              Ready to become a <span className="font-semibold">{targetRole}</span>?
+            </p>
+          )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowGenerator(true)}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center"
           >
+            <AcademicCapIcon className="w-5 h-5 mr-2" />
             Create Learning Path
           </motion.button>
         </div>
       )}
 
-      {!loading && learningPaths.length > 0 && (
+      {userId && !loading && learningPaths.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Path Selector */}
           <div className="lg:col-span-1">

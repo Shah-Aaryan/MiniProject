@@ -9,8 +9,136 @@ import {
   LightBulbIcon,
   ArrowPathIcon,
   ShareIcon,
-  BookmarkIcon
+  BookmarkIcon,
+  ChatBubbleLeftRightIcon,
+  BriefcaseIcon,
+  CurrencyDollarIcon,
+  ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
+
+// Career Insights Data
+const careerInsights = {
+  'Software Developer': {
+    salary: '$75,000 - $150,000',
+    growth: '+22% (Much faster than average)',
+    description: 'Design, develop, and maintain software applications. Work with various programming languages and frameworks to create solutions.',
+    keySkills: ['Programming', 'Problem Solving', 'Debugging', 'Version Control', 'Agile Methodologies'],
+    industries: ['Technology', 'Finance', 'Healthcare', 'E-commerce', 'Gaming'],
+    dailyTasks: ['Writing code', 'Code reviews', 'Bug fixing', 'Testing', 'Documentation'],
+    careerPath: 'Junior Developer → Mid-level Developer → Senior Developer → Lead Developer → Engineering Manager',
+    topCompanies: ['Google', 'Microsoft', 'Apple', 'Amazon', 'Meta']
+  },
+  'Web Developer': {
+    salary: '$60,000 - $120,000',
+    growth: '+13% (Faster than average)',
+    description: 'Create and maintain websites and web applications. Specialize in frontend, backend, or full-stack development.',
+    keySkills: ['HTML/CSS', 'JavaScript', 'React/Vue/Angular', 'Backend Development', 'Responsive Design'],
+    industries: ['Digital Agencies', 'E-commerce', 'Media', 'Startups', 'Consulting'],
+    dailyTasks: ['Building UI components', 'API integration', 'Performance optimization', 'Cross-browser testing'],
+    careerPath: 'Junior Web Developer → Web Developer → Senior Web Developer → Tech Lead → CTO',
+    topCompanies: ['Shopify', 'Squarespace', 'WordPress', 'Wix', 'Adobe']
+  },
+  'UX Designer': {
+    salary: '$65,000 - $130,000',
+    growth: '+16% (Much faster than average)',
+    description: 'Design user-centered digital experiences. Conduct research, create wireframes, and ensure products are intuitive and accessible.',
+    keySkills: ['User Research', 'Wireframing', 'Prototyping', 'Figma/Sketch', 'Usability Testing'],
+    industries: ['Tech Companies', 'Design Agencies', 'Consulting', 'E-commerce', 'Finance'],
+    dailyTasks: ['User research', 'Creating wireframes', 'Design testing', 'Stakeholder presentations'],
+    careerPath: 'Junior UX Designer → UX Designer → Senior UX Designer → Lead Designer → Design Director',
+    topCompanies: ['Apple', 'Airbnb', 'IDEO', 'Figma', 'Adobe']
+  },
+  'Database Developer': {
+    salary: '$70,000 - $135,000',
+    growth: '+10% (Faster than average)',
+    description: 'Design, implement, and maintain database systems. Optimize queries and ensure data integrity and security.',
+    keySkills: ['SQL', 'Database Design', 'Query Optimization', 'Data Modeling', 'ETL Processes'],
+    industries: ['Finance', 'Healthcare', 'E-commerce', 'Technology', 'Government'],
+    dailyTasks: ['Database design', 'Query optimization', 'Performance tuning', 'Backup management'],
+    careerPath: 'Database Developer → Senior Database Developer → Database Architect → Data Engineering Manager',
+    topCompanies: ['Oracle', 'Microsoft', 'IBM', 'Amazon AWS', 'MongoDB']
+  },
+  'Network Security Engineer': {
+    salary: '$80,000 - $160,000',
+    growth: '+33% (Much faster than average)',
+    description: 'Protect organizations from cyber threats. Implement security measures, monitor networks, and respond to incidents.',
+    keySkills: ['Network Security', 'Ethical Hacking', 'Firewall Management', 'Incident Response', 'Security Auditing'],
+    industries: ['Cybersecurity Firms', 'Finance', 'Government', 'Healthcare', 'Technology'],
+    dailyTasks: ['Security monitoring', 'Vulnerability assessments', 'Incident response', 'Security policy creation'],
+    careerPath: 'Security Analyst → Security Engineer → Senior Security Engineer → Security Architect → CISO',
+    topCompanies: ['Cisco', 'Palo Alto Networks', 'CrowdStrike', 'FireEye', 'IBM Security']
+  },
+  'Mobile Applications Developer': {
+    salary: '$70,000 - $145,000',
+    growth: '+22% (Much faster than average)',
+    description: 'Develop applications for mobile devices. Work with iOS, Android, or cross-platform frameworks.',
+    keySkills: ['Swift/Kotlin', 'React Native/Flutter', 'Mobile UI/UX', 'API Integration', 'App Store Optimization'],
+    industries: ['App Development', 'Gaming', 'E-commerce', 'Social Media', 'FinTech'],
+    dailyTasks: ['Mobile app development', 'UI implementation', 'Testing on devices', 'App store deployment'],
+    careerPath: 'Junior Mobile Developer → Mobile Developer → Senior Mobile Developer → Mobile Architect',
+    topCompanies: ['Apple', 'Google', 'Meta', 'Uber', 'Spotify']
+  },
+  'Software Quality Assurance (QA) / Testing': {
+    salary: '$55,000 - $110,000',
+    growth: '+12% (Faster than average)',
+    description: 'Ensure software quality through testing. Create test plans, execute tests, and report bugs.',
+    keySkills: ['Test Planning', 'Automation Testing', 'Bug Tracking', 'Selenium', 'Performance Testing'],
+    industries: ['Software Companies', 'Finance', 'Healthcare', 'E-commerce', 'Gaming'],
+    dailyTasks: ['Test case creation', 'Test execution', 'Bug reporting', 'Automation script development'],
+    careerPath: 'QA Tester → QA Engineer → Senior QA Engineer → QA Lead → QA Manager',
+    topCompanies: ['Microsoft', 'Amazon', 'Google', 'Salesforce', 'Adobe']
+  },
+  'Technical Support': {
+    salary: '$40,000 - $80,000',
+    growth: '+8% (As fast as average)',
+    description: 'Provide technical assistance to users. Troubleshoot issues, answer questions, and maintain customer satisfaction.',
+    keySkills: ['Problem Solving', 'Communication', 'Troubleshooting', 'Customer Service', 'Technical Knowledge'],
+    industries: ['Technology', 'Software', 'Telecommunications', 'Manufacturing', 'Healthcare'],
+    dailyTasks: ['Answering support tickets', 'Remote troubleshooting', 'Documentation', 'User training'],
+    careerPath: 'Support Technician → Technical Support Specialist → Senior Support Engineer → Support Manager',
+    topCompanies: ['Apple', 'Microsoft', 'Dell', 'HP', 'Cisco']
+  },
+  'Software Engineer': {
+    salary: '$80,000 - $160,000',
+    growth: '+22% (Much faster than average)',
+    description: 'Apply engineering principles to software development. Design scalable systems and write efficient code.',
+    keySkills: ['System Design', 'Algorithms', 'Software Architecture', 'Programming', 'Problem Solving'],
+    industries: ['Technology', 'Finance', 'Automotive', 'Aerospace', 'Healthcare'],
+    dailyTasks: ['System design', 'Code development', 'Architecture planning', 'Code reviews'],
+    careerPath: 'Software Engineer → Senior Software Engineer → Staff Engineer → Principal Engineer',
+    topCompanies: ['Google', 'Meta', 'Amazon', 'Netflix', 'Tesla']
+  },
+  'Applications Developer': {
+    salary: '$70,000 - $135,000',
+    growth: '+18% (Much faster than average)',
+    description: 'Develop software applications for specific business needs. Work on desktop, web, or mobile applications.',
+    keySkills: ['Application Development', 'Programming', 'Database Integration', 'UI/UX', 'Testing'],
+    industries: ['Enterprise Software', 'Healthcare', 'Finance', 'Retail', 'Manufacturing'],
+    dailyTasks: ['Application development', 'Requirements analysis', 'Integration', 'User training'],
+    careerPath: 'Junior App Developer → Application Developer → Senior App Developer → Application Architect',
+    topCompanies: ['SAP', 'Oracle', 'Salesforce', 'IBM', 'Microsoft']
+  },
+  'CRM Technical Developer': {
+    salary: '$75,000 - $140,000',
+    growth: '+15% (Much faster than average)',
+    description: 'Customize and develop CRM systems. Integrate business processes with customer relationship management platforms.',
+    keySkills: ['CRM Platforms', 'JavaScript', 'API Integration', 'Business Process', 'Data Migration'],
+    industries: ['Sales & Marketing', 'Consulting', 'Technology', 'Healthcare', 'Finance'],
+    dailyTasks: ['CRM customization', 'Workflow automation', 'Data integration', 'User support'],
+    careerPath: 'CRM Developer → Senior CRM Developer → CRM Architect → CRM Solutions Architect',
+    topCompanies: ['Salesforce', 'Microsoft Dynamics', 'HubSpot', 'Zoho', 'Oracle']
+  },
+  'Systems Security Administrator': {
+    salary: '$70,000 - $130,000',
+    growth: '+28% (Much faster than average)',
+    description: 'Manage and maintain security systems. Monitor for threats, implement security policies, and ensure compliance.',
+    keySkills: ['System Administration', 'Security Tools', 'Network Security', 'Compliance', 'Monitoring'],
+    industries: ['IT Services', 'Finance', 'Government', 'Healthcare', 'Retail'],
+    dailyTasks: ['Security monitoring', 'System maintenance', 'Policy enforcement', 'Incident investigation'],
+    careerPath: 'Security Administrator → Senior Security Admin → Security Manager → IT Security Director',
+    topCompanies: ['IBM', 'Cisco', 'Symantec', 'McAfee', 'Fortinet']
+  }
+};
 
 const EnhancedResults = () => {
   const location = useLocation();
@@ -77,8 +205,21 @@ const EnhancedResults = () => {
     const skills = {};
     if (data.explainable_ai?.feature_importance?.feature_importance) {
       Object.entries(data.explainable_ai.feature_importance.feature_importance).forEach(([skill, info]) => {
-        skills[skill] = info.user_value || 0;
+        // Map skill values from 0-10 scale
+        const value = info.user_value || 0;
+        // Normalize to 0-10 if needed
+        skills[skill] = value > 10 ? Math.round(value / 10) : value;
       });
+    }
+    // If no skills found, provide default skill set
+    if (Object.keys(skills).length === 0) {
+      return {
+        'Programming Skills': 5,
+        'Problem Solving': 5,
+        'Communication': 5,
+        'Teamwork': 5,
+        'Project Management': 3
+      };
     }
     return skills;
   };
@@ -244,6 +385,108 @@ const EnhancedResults = () => {
           </div>
         </div>
       </div>
+
+      {/* Career Insights Section */}
+      {careerInsights[predictionData.prediction] && (
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-bold text-gray-800 flex items-center">
+              <BriefcaseIcon className="w-8 h-8 text-blue-600 mr-3" />
+              Career Insights: {predictionData.prediction}
+            </h3>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/chat', { state: { initialMessage: `Tell me more about ${predictionData.prediction} career` }})}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <ChatBubbleLeftRightIcon className="w-5 h-5" />
+              <span>Ask AI Chatbot</span>
+            </motion.button>
+          </div>
+
+          <p className="text-gray-700 mb-6 text-lg">{careerInsights[predictionData.prediction].description}</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Salary Info */}
+            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+              <div className="flex items-center mb-2">
+                <CurrencyDollarIcon className="w-6 h-6 text-green-600 mr-2" />
+                <h4 className="font-semibold text-gray-800">Salary Range</h4>
+              </div>
+              <p className="text-2xl font-bold text-green-700">{careerInsights[predictionData.prediction].salary}</p>
+              <p className="text-sm text-gray-600 mt-1">Annual (USD)</p>
+            </div>
+
+            {/* Growth Rate */}
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-center mb-2">
+                <ArrowTrendingUpIcon className="w-6 h-6 text-blue-600 mr-2" />
+                <h4 className="font-semibold text-gray-800">Job Market Growth</h4>
+              </div>
+              <p className="text-xl font-bold text-blue-700">{careerInsights[predictionData.prediction].growth}</p>
+              <p className="text-sm text-gray-600 mt-1">Next 10 years</p>
+            </div>
+          </div>
+
+          {/* Key Skills */}
+          <div className="mb-6">
+            <h4 className="font-semibold text-gray-800 mb-3">🔑 Key Skills Required:</h4>
+            <div className="flex flex-wrap gap-2">
+              {careerInsights[predictionData.prediction].keySkills.map((skill, idx) => (
+                <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Industries */}
+          <div className="mb-6">
+            <h4 className="font-semibold text-gray-800 mb-3">🏢 Top Industries:</h4>
+            <div className="flex flex-wrap gap-2">
+              {careerInsights[predictionData.prediction].industries.map((industry, idx) => (
+                <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                  {industry}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Daily Tasks */}
+          <div className="mb-6">
+            <h4 className="font-semibold text-gray-800 mb-3">📋 Typical Daily Tasks:</h4>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {careerInsights[predictionData.prediction].dailyTasks.map((task, idx) => (
+                <li key={idx} className="flex items-center text-gray-700">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  {task}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Career Path */}
+          <div className="mb-6">
+            <h4 className="font-semibold text-gray-800 mb-3">🎯 Career Progression Path:</h4>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+              <p className="text-gray-800 font-medium">{careerInsights[predictionData.prediction].careerPath}</p>
+            </div>
+          </div>
+
+          {/* Top Companies */}
+          <div>
+            <h4 className="font-semibold text-gray-800 mb-3">🌟 Top Companies Hiring:</h4>
+            <div className="flex flex-wrap gap-3">
+              {careerInsights[predictionData.prediction].topCompanies.map((company, idx) => (
+                <span key={idx} className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-medium border border-gray-300">
+                  {company}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Next Steps */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg border border-green-200">

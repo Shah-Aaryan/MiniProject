@@ -22,9 +22,9 @@ A comprehensive full-stack application that helps users discover their ideal car
   - Web Developer
 
 ###  AI-Powered Chatbot
-- **Google Gemini Integration**: Powered by Google's Generative AI for intelligent conversations
-- **RAG (Retrieval-Augmented Generation)**: Uses FAISS vector database for context-aware responses
-- **PDF Knowledge Base**: Extracts information from job role documentation
+- **Google Gemini Integration**: Powered by Google's Generative AI (Gemini 1.5 Flash) for intelligent conversations
+- **Direct AI Response**: Fast, real-time responses without complex RAG setup
+- **IT Career Expertise**: Specialized in providing career guidance and IT industry insights
 - **Fallback Support**: Graceful handling when API keys are not configured
 
 ###  Voice Interface
@@ -190,13 +190,10 @@ Frontend/
 ##  Technologies Used
 
 ### Backend
-- **Django 4.2.13** - Web framework
+- **Django 4.2.7** - Web framework
 - **Django REST Framework** - API development
-- **Google Generative AI** - AI chatbot
-- **LangChain** - LLM framework
-- **FAISS** - Vector database
-- **scikit-learn** - Machine learning
-- **PyPDF2** - PDF processing
+- **Google Generative AI (Gemini)** - AI chatbot with career expertise
+- **scikit-learn** - Machine learning for predictions
 - **SpeechRecognition** - Voice input
 
 ### Frontend

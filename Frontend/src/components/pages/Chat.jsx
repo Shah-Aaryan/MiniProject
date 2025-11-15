@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../index.css";
 import { TypeAnimation } from "react-type-animation";
 import "regenerator-runtime/runtime";
@@ -39,26 +39,40 @@ const Message = ({ message }) => {
 };
 
 const Chat = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([
     { role: "bot", content: "Hello, how can I assist you?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  // Handle initial message from navigation state
+  useEffect(() => {
+    if (location.state?.initialMessage) {
+      setInput(location.state.initialMessage);
+      // Auto-send after a short delay
+      setTimeout(() => {
+        handleSendMessage(location.state.initialMessage);
+      }, 500);
+      // Clear the state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
-    const userMessage = { role: "user", content: input };
-    setMessages([...messages, userMessage]);
+  const handleSendMessage = async (messageText) => {
+    const textToSend = messageText || input;
+    if (!textToSend.trim()) return;
+
+    const userMessage = { role: "user", content: textToSend };
+    setMessages(prev => [...prev, userMessage]);
     setInput("");
     setLoading(true);
 
     // Special response for "Thank you"
-    if (input.trim().toLowerCase() === "thank you") {
-      setMessages([
-        ...messages,
-        userMessage,
+    if (textToSend.trim().toLowerCase() === "thank you") {
+      setMessages(prev => [
+        ...prev,
         { role: "bot", content: "You are welcome, Good luck to your future!" },
       ]);
       setLoading(false);
@@ -71,17 +85,25 @@ const Chat = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: textToSend }),
       });
 
       const data = await response.json();
       const botMessage = { role: "bot", content: data.response.output_text };
-      setMessages([...messages, userMessage, botMessage]);
+      setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error("Error fetching chatbot response:", error);
+      setMessages(prev => [...prev, { 
+        role: "bot", 
+        content: "Sorry, I'm having trouble connecting. Please make sure the backend server is running." 
+      }]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSend = async () => {
+    await handleSendMessage(input);
   };
 
   return (

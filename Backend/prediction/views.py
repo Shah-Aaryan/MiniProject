@@ -527,9 +527,14 @@ class MilestoneProgressView(APIView):
                 # Learning path completed - could trigger notifications, certificates, etc.
                 pass
             
-            serializer = MilestoneProgressSerializer(progress_log)
+            # Return both progress log and updated milestone data
+            progress_serializer = MilestoneProgressSerializer(progress_log)
+            milestone_serializer = LearningMilestoneSerializer(milestone)
+            
             return Response({
-                'progress_log': serializer.data,
+                'success': True,
+                'progress_log': progress_serializer.data,
+                'milestone': milestone_serializer.data,
                 'milestone_updated': True
             }, status=status.HTTP_201_CREATED)
             

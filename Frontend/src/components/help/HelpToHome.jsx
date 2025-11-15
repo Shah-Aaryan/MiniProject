@@ -3,7 +3,7 @@ import { Home, StarsCanvas } from '..';
 
 export default function HelpToHome() {
   return (
-   <div className="relative z-0 bg-primary">
+   <div className="relative z-0 bg-black min-h-screen">
           <div className="relative z-0">
             <Home/>
             <StarsCanvas/>
