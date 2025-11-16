@@ -8,14 +8,11 @@ from .models import (
 
 
 class QuestionOptionSerializer(serializers.ModelSerializer):
-    """Serializer for question options (hides correct answers)"""
+    """Serializer for question options (hides correct answers during quiz)"""
     class Meta:
         model = QuestionOption
-        fields = ['id', 'option_text', 'is_correct', 'explanation', 'order']
-        extra_kwargs = {
-            'is_correct': {'write_only': True},  # Hide correct answer in responses
-            'explanation': {'write_only': True}  # Hide explanation until answered
-        }
+        fields = ['id', 'option_text', 'order']
+        # Note: is_correct and explanation are hidden during active quiz
 
 
 class QuestionOptionReviewSerializer(serializers.ModelSerializer):

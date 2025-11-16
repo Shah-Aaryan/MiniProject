@@ -32,8 +32,8 @@ const ExplainableAI = ({ explainableData, prediction }) => {
 
   if (!explainableData) {
     return (
-      <div className="bg-gray-100 p-6 rounded-lg">
-        <p className="text-gray-600">No explainable AI data available</p>
+      <div className="bg-gradient-to-br from-gray-900 to-black border-2 border-blue-700 p-8 rounded-2xl">
+        <p className="text-gray-300 font-bold text-lg">No explainable AI data available</p>
       </div>
     );
   }
@@ -161,10 +161,10 @@ const ExplainableAI = ({ explainableData, prediction }) => {
   const TabButton = ({ id, label, isActive, onClick }) => (
     <button
       onClick={() => onClick(id)}
-      className={`px-6 py-3 font-medium rounded-lg transition-all duration-300 ${
+      className={`px-8 py-4 font-black uppercase tracking-wide rounded-xl transition-all duration-300 border-2 ${
         isActive 
-          ? 'bg-blue-600 text-white shadow-lg' 
-          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          ? 'bg-gradient-to-r from-red-600 via-blue-600 to-red-600 text-white border-blue-500 shadow-lg shadow-blue-500/50' 
+          : 'bg-gray-900 text-gray-300 border-gray-700 hover:border-blue-600 hover:text-white'
       }`}
     >
       {label}
@@ -176,33 +176,33 @@ const ExplainableAI = ({ explainableData, prediction }) => {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onClick({ name: feature, ...data })}
-      className={`p-4 rounded-lg cursor-pointer transition-all duration-300 ${
+      className={`p-5 rounded-xl cursor-pointer transition-all duration-300 border-2 ${
         isSelected 
-          ? 'bg-blue-100 border-2 border-blue-500' 
-          : 'bg-white border border-gray-200 hover:shadow-md'
+          ? 'bg-gradient-to-br from-blue-900/50 to-black border-blue-500 shadow-lg shadow-blue-500/30' 
+          : 'bg-gradient-to-br from-gray-900 to-black border-gray-700 hover:border-blue-600 hover:shadow-md'
       }`}
     >
-      <div className="flex justify-between items-center mb-2">
-        <h4 className="font-semibold text-gray-800">{feature}</h4>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${
-          data.impact_level === 'High' ? 'bg-red-100 text-red-800' :
-          data.impact_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-          'bg-green-100 text-green-800'
+      <div className="flex justify-between items-center mb-3">
+        <h4 className="font-bold text-white uppercase tracking-wide">{feature}</h4>
+        <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase ${
+          data.impact_level === 'High' ? 'bg-red-900/50 text-red-400 border border-red-700' :
+          data.impact_level === 'Medium' ? 'bg-yellow-900/50 text-yellow-400 border border-yellow-700' :
+          'bg-green-900/50 text-green-400 border border-green-700'
         }`}>
           {data.impact_level}
         </span>
       </div>
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm text-gray-600">Your Score:</span>
-        <span className="font-medium">{data.user_value}/10</span>
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-sm text-gray-400 font-bold">Your Score:</span>
+        <span className="font-black text-blue-400 text-lg">{data.user_value}/10</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="w-full bg-gray-800 rounded-full h-3 border border-gray-700">
         <div 
-          className="bg-blue-600 h-2 rounded-full" 
+          className="bg-gradient-to-r from-red-600 to-blue-600 h-3 rounded-full shadow-lg" 
           style={{ width: `${(data.importance_score * 100)}%` }}
         ></div>
       </div>
-      <p className="text-xs text-gray-600 mt-2">{data.explanation}</p>
+      <p className="text-xs text-gray-300 mt-3 leading-relaxed">{data.explanation}</p>
     </motion.div>
   );
 
@@ -211,38 +211,38 @@ const ExplainableAI = ({ explainableData, prediction }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-l-4 border-purple-500"
+      className="bg-gradient-to-r from-red-900/40 to-blue-900/40 p-6 rounded-xl border-l-4 border-red-600"
     >
-      <div className="flex justify-between items-start mb-2">
-        <h4 className="font-semibold text-purple-800">{tip.feature}</h4>
-        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">
+      <div className="flex justify-between items-start mb-3">
+        <h4 className="font-black text-red-400 uppercase tracking-wide">{tip.feature}</h4>
+        <span className="bg-red-900/50 text-red-300 px-3 py-2 rounded-lg text-xs font-black uppercase border border-red-700">
           +{(tip.impact_score * 100).toFixed(1)}%
         </span>
       </div>
-      <div className="text-sm text-gray-700 mb-2">
-        <span className="font-medium">Current:</span> {tip.current_value}/10 → 
-        <span className="font-medium text-green-600 ml-1">Suggested:</span> {tip.suggested_value}/10
+      <div className="text-sm text-gray-300 mb-3 font-bold">
+        <span className="text-red-400">Current:</span> {tip.current_value}/10 → 
+        <span className="text-blue-400 ml-2">Suggested:</span> {tip.suggested_value}/10
       </div>
-      <p className="text-sm text-gray-600">{tip.tip}</p>
-      <div className="mt-2">
-        <span className="text-xs text-purple-600 font-medium">Target Role: {tip.target_role}</span>
+      <p className="text-sm text-gray-300 leading-relaxed">{tip.tip}</p>
+      <div className="mt-3">
+        <span className="text-xs text-blue-400 font-bold uppercase">Target Role: {tip.target_role}</span>
       </div>
     </motion.div>
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">
+    <div className="max-w-6xl mx-auto p-6 bg-gray-900 rounded-lg border border-gray-700">
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold text-white mb-2">
           🔍 Why {prediction}?
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-400">
           Understand the factors behind your career prediction with AI explanations
         </p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex space-x-4 mb-8">
+      <div className="flex space-x-3 mb-6">
         <TabButton 
           id="importance" 
           label="Feature Importance" 
@@ -272,39 +272,39 @@ const ExplainableAI = ({ explainableData, prediction }) => {
       >
         {activeTab === 'importance' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4">Feature Importance Chart</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-gray-800 p-5 rounded-lg border border-gray-700">
+                <h3 className="text-lg font-medium text-white mb-4">Feature Importance Chart</h3>
                 {featureImportanceData.length > 0 ? (
                   <Bar data={importanceChartData} options={importanceChartOptions} />
                 ) : (
-                  <p className="text-gray-500">No feature importance data available</p>
+                  <p className="text-gray-400 font-bold">No feature importance data available</p>
                 )}
               </div>
               
               {selectedFeature && (
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="text-xl font-semibold mb-4">Selected Feature Details</h3>
-                  <div className="space-y-3">
+                <div className="bg-gray-800 p-5 rounded-lg border border-blue-600">
+                  <h3 className="text-lg font-medium text-white mb-4">Selected Feature Details</h3>
+                  <div className="space-y-4">
                     <div>
-                      <span className="font-medium">Feature:</span> {selectedFeature.name}
+                      <span className="font-bold text-gray-400">Feature:</span> <span className="font-black text-white text-lg">{selectedFeature.name}</span>
                     </div>
                     <div>
-                      <span className="font-medium">Your Score:</span> {selectedFeature.user_value}/10
+                      <span className="font-bold text-gray-400">Your Score:</span> <span className="font-black text-blue-400 text-lg">{selectedFeature.user_value}/10</span>
                     </div>
                     <div>
-                      <span className="font-medium">Impact Level:</span> 
-                      <span className={`ml-2 px-2 py-1 rounded text-xs ${
-                        selectedFeature.impact_level === 'High' ? 'bg-red-100 text-red-800' :
-                        selectedFeature.impact_level === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
+                      <span className="font-bold text-gray-400">Impact Level:</span> 
+                      <span className={`ml-2 px-3 py-1 rounded-lg text-xs font-black uppercase border ${
+                        selectedFeature.impact_level === 'High' ? 'bg-red-900/50 text-red-400 border-red-700' :
+                        selectedFeature.impact_level === 'Medium' ? 'bg-yellow-900/50 text-yellow-400 border-yellow-700' :
+                        'bg-green-900/50 text-green-400 border-green-700'
                       }`}>
                         {selectedFeature.impact_level}
                       </span>
                     </div>
                     <div>
-                      <span className="font-medium">Explanation:</span>
-                      <p className="text-gray-700 mt-1">{selectedFeature.explanation}</p>
+                      <span className="font-bold text-gray-400">Explanation:</span>
+                      <p className="text-gray-300 mt-2 leading-relaxed">{selectedFeature.explanation}</p>
                     </div>
                   </div>
                 </div>
@@ -312,8 +312,8 @@ const ExplainableAI = ({ explainableData, prediction }) => {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold mb-4">Top Contributing Factors</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <h3 className="text-lg font-medium text-white mb-4">Top Contributing Factors</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {featureImportanceData.map(([feature, data]) => (
                   <FeatureCard
                     key={feature}
@@ -330,11 +330,11 @@ const ExplainableAI = ({ explainableData, prediction }) => {
 
         {activeTab === 'counterfactual' && (
           <div className="space-y-6">
-            <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-2 text-purple-800">
+            <div className="bg-gray-800 p-5 rounded-lg border border-gray-700">
+              <h3 className="text-lg font-medium mb-2 text-white">
                 💡 Personalized Improvement Suggestions
               </h3>
-              <p className="text-purple-700">
+              <p className="text-gray-400">
                 These tips show you exactly what to improve to increase your chances for different career roles.
               </p>
             </div>
@@ -345,7 +345,7 @@ const ExplainableAI = ({ explainableData, prediction }) => {
                   <CounterfactualTip key={index} tip={tip} index={index} />
                 ))
               ) : (
-                <p className="text-gray-500 text-center py-8">
+                <p className="text-gray-400 font-bold text-center py-8">
                   No improvement suggestions available at this time.
                 </p>
               )}
@@ -355,40 +355,40 @@ const ExplainableAI = ({ explainableData, prediction }) => {
 
         {activeTab === 'confidence' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4">Career Role Probabilities</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-gray-800 p-5 rounded-lg border border-gray-700">
+                <h3 className="text-lg font-medium text-white mb-4">Career Role Probabilities</h3>
                 {sortedConfidences.length > 0 ? (
                   <Doughnut data={confidenceChartData} options={confidenceChartOptions} />
                 ) : (
-                  <p className="text-gray-500">No confidence data available</p>
+                  <p className="text-gray-400 font-bold">No confidence data available</p>
                 )}
               </div>
               
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4">Model Calibration</h3>
+              <div className="bg-gray-800 p-5 rounded-lg border border-gray-700">
+                <h3 className="text-lg font-medium text-white mb-4">Model Calibration</h3>
                 {calibrationPlotData.prob_pred ? (
                   <Line data={calibrationChartData} />
                 ) : (
-                  <p className="text-gray-500">No calibration data available</p>
+                  <p className="text-gray-400 font-bold">No calibration data available</p>
                 )}
               </div>
             </div>
 
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4 text-blue-800">Confidence Breakdown</h3>
-              <div className="space-y-3">
+            <div className="bg-gray-800 p-5 rounded-lg border border-gray-700">
+              <h3 className="text-lg font-medium text-white mb-4">Confidence Breakdown</h3>
+              <div className="space-y-4">
                 {sortedConfidences.map(([role, confidence], index) => (
                   <div key={role} className="flex justify-between items-center">
-                    <span className="font-medium">{role}</span>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-32 bg-gray-200 rounded-full h-2">
+                    <span className="font-bold text-white">{role}</span>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-40 bg-gray-800 rounded-full h-3 border border-gray-700">
                         <div 
-                          className="bg-blue-600 h-2 rounded-full" 
+                          className="bg-gradient-to-r from-red-600 to-blue-600 h-3 rounded-full shadow-lg" 
                           style={{ width: `${confidence * 100}%` }}
                         ></div>
                       </div>
-                      <span className="font-medium text-blue-800">
+                      <span className="font-black text-blue-400 text-lg min-w-[60px]">
                         {(confidence * 100).toFixed(1)}%
                       </span>
                     </div>

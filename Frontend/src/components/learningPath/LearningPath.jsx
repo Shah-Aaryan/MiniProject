@@ -268,18 +268,18 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100';
-      case 'in_progress': return 'text-blue-600 bg-blue-100';
-      case 'not_started': return 'text-gray-600 bg-gray-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'completed': return 'text-blue-400 bg-blue-900/30 border border-blue-500';
+      case 'in_progress': return 'text-red-400 bg-red-900/30 border border-red-500';
+      case 'not_started': return 'text-gray-400 bg-gray-800/50 border border-gray-600';
+      default: return 'text-gray-400 bg-gray-800/50 border border-gray-600';
     }
   };
 
   const SkillInput = ({ skill, value, onChange }) => (
     <div className="space-y-2">
       <div className="flex justify-between">
-        <label className="text-sm font-medium text-gray-700">{skill}</label>
-        <span className="text-sm text-gray-500">{value}/10</span>
+        <label className="text-sm font-semibold text-blue-400 uppercase tracking-wide">{skill}</label>
+        <span className="text-sm text-red-400 font-bold">{value}/10</span>
       </div>
       <input
         type="range"
@@ -287,7 +287,10 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
         max="10"
         value={value}
         onChange={(e) => onChange(skill, parseInt(e.target.value))}
-        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+        style={{
+          background: `linear-gradient(to right, rgb(220, 38, 38) 0%, rgb(37, 99, 235) ${value * 10}%, rgb(55, 65, 81) ${value * 10}%)`
+        }}
       />
     </div>
   );
@@ -321,40 +324,42 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
     return (
       <motion.div
         layout
-        className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gray-900 border border-gray-700 rounded-lg p-5 hover:border-blue-600 transition-colors duration-200"
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <div className={`p-2 rounded-lg ${getStatusColor(milestone.status)}`}>
-              <IconComponent className="w-5 h-5" />
+            <div className={`p-3 rounded-lg ${getStatusColor(milestone.status)} backdrop-blur-sm`}>
+              <IconComponent className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-800">{milestone.title}</h3>
-              <p className="text-sm text-gray-600">{milestone.milestone_type.replace('_', ' ')}</p>
+              <h3 className="font-semibold text-lg text-white">{milestone.title}</h3>
+              <p className="text-sm text-gray-400">{milestone.milestone_type.replace('_', ' ')}</p>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-500">
-              <ClockIcon className="w-4 h-4 inline mr-1" />
-              {milestone.estimated_hours}h
+            <div className="text-sm text-gray-400 flex items-center justify-end">
+              <ClockIcon className="w-4 h-4 mr-1" />
+              <span className="font-semibold">{milestone.estimated_hours}h</span>
             </div>
-            <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getStatusColor(milestone.status)}`}>
+            <div className={`text-xs px-3 py-1.5 rounded-full mt-2 ${getStatusColor(milestone.status)} font-semibold uppercase tracking-wider`}>
               {milestone.status.replace('_', ' ')}
             </div>
           </div>
         </div>
 
-        <p className="text-gray-600 text-sm mb-4">{milestone.description}</p>
+        <p className="text-gray-300 text-sm mb-6 leading-relaxed">{milestone.description}</p>
 
         {/* Progress Bar */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-600 mb-1">
+        <div className="mb-5">
+          <div className="flex justify-between text-sm text-gray-400 mb-2">
             <span>Progress</span>
-            <span>{milestone.progress_percentage || 0}%</span>
+            <span className="font-medium text-blue-400">{milestone.progress_percentage || 0}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-800 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${milestone.progress_percentage || 0}%` }}
             ></div>
           </div>
@@ -362,13 +367,13 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
 
         {/* Skills Gained */}
         {milestone.skills_gained && milestone.skills_gained.length > 0 && (
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Skills You'll Gain:</h4>
+          <div className="mb-5">
+            <h4 className="text-sm font-medium text-gray-300 mb-2">Skills You'll Gain</h4>
             <div className="flex flex-wrap gap-2">
               {milestone.skills_gained.map((skill, index) => (
                 <span 
                   key={index}
-                  className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full"
+                  className="px-3 py-1 bg-gray-800 text-blue-400 text-xs rounded border border-gray-700"
                 >
                   {skill}
                 </span>
@@ -379,17 +384,17 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
 
         {/* Resources */}
         {milestone.resources && milestone.resources.length > 0 && (
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Resources:</h4>
+          <div className="mb-5">
+            <h4 className="text-sm font-medium text-gray-300 mb-2">Resources</h4>
             <div className="space-y-2">
               {milestone.resources.slice(0, 3).map((resource, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">{resource.title}</span>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs text-gray-500">{resource.duration_hours}h</span>
+                <div key={index} className="flex items-center justify-between text-sm bg-gray-800 p-3 rounded border border-gray-700">
+                  <span className="text-gray-300">{resource.title}</span>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xs text-gray-400">{resource.duration_hours}h</span>
                     <div className="flex items-center">
-                      <StarIcon className="w-3 h-3 text-yellow-400 fill-current" />
-                      <span className="text-xs text-gray-500 ml-1">{resource.rating}</span>
+                      <StarIcon className="w-3 h-3 text-yellow-500 fill-current" />
+                      <span className="text-xs text-gray-400 ml-1">{resource.rating}</span>
                     </div>
                   </div>
                 </div>
@@ -399,12 +404,12 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex space-x-2">
+        <div className="flex space-x-3">
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
             onClick={() => setShowDetails(!showDetails)}
-            className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+            className="flex-1 px-4 py-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 border border-gray-700 hover:border-blue-600 transition-colors text-sm"
           >
             {showDetails ? 'Hide Details' : 'View Details'}
           </motion.button>
@@ -432,13 +437,13 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
                 }
               }}
               disabled={isUpdating}
-              className={`px-4 py-2 rounded-lg transition-all text-sm flex items-center justify-center ${
+              className={`px-5 py-2 rounded transition-colors text-sm font-medium flex items-center justify-center border ${
                 isUpdating 
-                  ? 'bg-gray-400 cursor-not-allowed' 
+                  ? 'bg-gray-700 cursor-not-allowed border-gray-600 text-gray-400' 
                   : showSuccess
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-blue-600 hover:bg-blue-700'
-              } text-white`}
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 border-blue-600 text-white'
+              }`}
             >
               {isUpdating ? (
                 <>
@@ -464,17 +469,19 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-4 pt-4 border-t border-gray-200"
+              className="mt-6 pt-6 border-t-2 border-blue-900/50"
             >
               {/* Learning Objectives */}
               {milestone.learning_objectives && (
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-700 mb-2">Learning Objectives:</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                <div className="mb-6">
+                  <h4 className="font-bold text-blue-400 mb-3 uppercase tracking-wide flex items-center">
+                    <span className="mr-2">🎯</span> Learning Objectives
+                  </h4>
+                  <ul className="text-sm text-gray-300 space-y-2">
                     {milestone.learning_objectives.map((objective, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-blue-500 mr-2">•</span>
-                        {objective}
+                      <li key={index} className="flex items-start bg-gray-800/50 p-3 rounded-lg border-l-4 border-red-600">
+                        <span className="text-red-500 mr-3 font-bold">▸</span>
+                        <span className="leading-relaxed">{objective}</span>
                       </li>
                     ))}
                   </ul>
@@ -483,13 +490,15 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
 
               {/* Success Criteria */}
               {milestone.success_criteria && (
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-700 mb-2">Success Criteria:</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                <div className="mb-6">
+                  <h4 className="font-bold text-blue-400 mb-3 uppercase tracking-wide flex items-center">
+                    <span className="mr-2">✓</span> Success Criteria
+                  </h4>
+                  <ul className="text-sm text-gray-300 space-y-2">
                     {milestone.success_criteria.map((criteria, index) => (
-                      <li key={index} className="flex items-start">
-                        <CheckCircleIcon className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                        {criteria}
+                      <li key={index} className="flex items-start bg-gray-800/50 p-3 rounded-lg border-l-4 border-blue-600">
+                        <CheckCircleIcon className="w-5 h-5 text-blue-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="leading-relaxed">{criteria}</span>
                       </li>
                     ))}
                   </ul>
@@ -497,11 +506,11 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
               )}
 
               {/* Progress Update Form */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-700 mb-3">Update Your Progress</h4>
-                <div className="space-y-3">
+              <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black p-6 rounded-xl border-2 border-blue-900">
+                <h4 className="font-bold text-blue-400 mb-4 uppercase tracking-wide text-lg">Update Your Progress</h4>
+                <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-gray-600">Progress Percentage</label>
+                    <label className="text-sm text-gray-300 font-semibold mb-2 block">Progress Percentage</label>
                     <input
                       type="range"
                       min="0"
@@ -511,15 +520,18 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
                         ...prev,
                         progress_percentage: parseInt(e.target.value)
                       }))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      style={{
+                        background: `linear-gradient(to right, rgb(220, 38, 38) 0%, rgb(37, 99, 235) ${progressForm.progress_percentage}%, rgb(55, 65, 81) ${progressForm.progress_percentage}%)`
+                      }}
                     />
-                    <div className="text-center text-sm text-gray-600">
+                    <div className="text-center text-2xl text-blue-400 font-bold mt-2">
                       {progressForm.progress_percentage}%
                     </div>
                   </div>
                   
                   <div>
-                    <label className="text-sm text-gray-600">Time Spent (minutes)</label>
+                    <label className="text-sm text-gray-300 font-semibold mb-2 block">Time Spent (minutes)</label>
                     <input
                       type="number"
                       value={progressForm.time_spent_minutes}
@@ -527,21 +539,21 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
                         ...prev,
                         time_spent_minutes: parseInt(e.target.value) || 0
                       }))}
-                      className="w-full p-2 border border-gray-200 rounded text-sm"
+                      className="w-full p-3 border-2 border-gray-700 bg-gray-800 text-white rounded-lg text-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-500 transition-all"
                       placeholder="Enter minutes spent..."
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm text-gray-600">Notes</label>
+                    <label className="text-sm text-gray-300 font-semibold mb-2 block">Notes</label>
                     <textarea
                       value={progressForm.notes}
                       onChange={(e) => setProgressForm(prev => ({
                         ...prev,
                         notes: e.target.value
                       }))}
-                      className="w-full p-2 border border-gray-200 rounded text-sm"
-                      rows="2"
+                      className="w-full p-3 border-2 border-gray-700 bg-gray-800 text-white rounded-lg text-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-500 transition-all"
+                      rows="3"
                       placeholder="Add your notes..."
                     />
                   </div>
@@ -565,12 +577,12 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
                       }
                     }}
                     disabled={isUpdating}
-                    className={`w-full px-4 py-2 rounded-lg transition-all text-sm flex items-center justify-center ${
+                    className={`w-full px-6 py-4 rounded-lg transition-all text-sm font-bold uppercase tracking-wide flex items-center justify-center border-2 ${
                       isUpdating
-                        ? 'bg-gray-400 cursor-not-allowed'
+                        ? 'bg-gray-700 cursor-not-allowed border-gray-600 text-gray-400'
                         : showSuccess
-                        ? 'bg-green-600 hover:bg-green-700'
-                        : 'bg-blue-600 hover:bg-blue-700'
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 border-blue-500 text-white shadow-lg shadow-blue-500/50'
+                        : 'bg-gradient-to-r from-red-600 via-blue-600 to-red-600 hover:from-red-500 hover:to-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/50'
                     } text-white`}
                   >
                     {isUpdating ? (
@@ -602,22 +614,22 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white p-6 rounded-lg shadow-lg"
+      className="bg-gray-900 p-6 rounded-lg border border-gray-700"
     >
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">Generate Learning Path</h2>
-      <p className="text-gray-600 mb-6">
-        Create a personalized roadmap to achieve your career goal: <span className="font-semibold text-blue-600">{targetRole || 'Your Target Role'}</span>
+      <h2 className="text-2xl font-semibold text-white mb-2">Generate Learning Path</h2>
+      <p className="text-gray-400 mb-6">
+        Create a personalized roadmap to achieve your career goal: <span className="font-medium text-blue-400">{targetRole || 'Your Target Role'}</span>
       </p>
       
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800 text-sm">{error}</p>
+        <div className="mb-8 p-5 bg-red-900/40 border-2 border-red-600 rounded-xl">
+          <p className="text-red-300 text-sm font-semibold">{error}</p>
         </div>
       )}
       
       <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Target Role <span className="text-red-500">*</span>
           </label>
           <input
@@ -627,24 +639,24 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
               ...prev,
               target_role: e.target.value
             }))}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-3 border border-gray-700 bg-gray-800 text-white rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             placeholder="e.g., Software Developer, Data Scientist..."
             required
           />
           {!generationForm.target_role && (
-            <p className="text-xs text-red-500 mt-1">Target role is required</p>
+            <p className="text-xs text-red-400 mt-1">Target role is required</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Experience Level</label>
           <select
             value={generationForm.experience_level}
             onChange={(e) => setGenerationForm(prev => ({
               ...prev,
               experience_level: e.target.value
             }))}
-            className="w-full p-3 border border-gray-200 rounded-lg"
+            className="w-full p-3 border border-gray-700 bg-gray-800 text-white rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
@@ -653,16 +665,16 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Current Skills (Rate your proficiency 0-10)
           </label>
-          <p className="text-xs text-gray-500 mb-4">
+          <p className="text-xs text-gray-400 mb-3">
             Help us understand your starting point to create a personalized path
           </p>
-          <div className="space-y-4 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-4">
+          <div className="space-y-3 max-h-64 overflow-y-auto border border-gray-700 bg-gray-800 rounded p-3">
             {Object.keys(generationForm.current_skills).length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-gray-500 text-sm mb-2">No skills added yet</p>
+              <div className="text-center py-6">
+                <p className="text-gray-400 text-sm mb-3">No skills added yet</p>
                 <button
                   onClick={() => {
                     const newSkill = prompt('Enter skill name:');
@@ -676,7 +688,7 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
                       }));
                     }
                   }}
-                  className="text-blue-600 text-sm hover:text-blue-700 font-medium"
+                  className="text-blue-400 text-sm hover:text-blue-300 font-bold uppercase tracking-wide"
                 >
                   + Add Your First Skill
                 </button>
@@ -773,13 +785,13 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
           </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-          <h4 className="font-semibold text-blue-900 mb-2">What you'll get:</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>✅ Personalized milestones based on your skill level</li>
-            <li>✅ Curated learning resources (courses, projects, certifications)</li>
-            <li>✅ Estimated timeline to achieve your goal</li>
-            <li>✅ Progress tracking and reminders</li>
+        <div className="bg-gradient-to-r from-blue-900/40 via-red-900/40 to-blue-900/40 border-2 border-blue-700 rounded-xl p-6 mb-6">
+          <h4 className="font-bold text-blue-400 mb-4 text-lg uppercase tracking-wide">What you'll get:</h4>
+          <ul className="text-sm text-gray-300 space-y-2">
+            <li className="flex items-center"><span className="text-blue-400 mr-2">✓</span> Personalized milestones based on your skill level</li>
+            <li className="flex items-center"><span className="text-blue-400 mr-2">✓</span> Curated learning resources (courses, projects, certifications)</li>
+            <li className="flex items-center"><span className="text-blue-400 mr-2">✓</span> Estimated timeline to achieve your goal</li>
+            <li className="flex items-center"><span className="text-blue-400 mr-2">✓</span> Progress tracking and reminders</li>
           </ul>
         </div>
 
@@ -791,26 +803,26 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
               setShowGenerator(false);
               setError(null);
             }}
-            className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            className="flex-1 px-6 py-4 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 border-2 border-gray-700 hover:border-gray-600 transition-all font-bold uppercase tracking-wide"
             disabled={loading}
           >
             Cancel
           </motion.button>
           
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(37, 99, 235, 0.8)' }}
             whileTap={{ scale: 0.98 }}
             onClick={generateLearningPath}
             disabled={loading || !generationForm.target_role}
-            className={`flex-1 px-6 py-3 rounded-lg transition-colors flex items-center justify-center ${
+            className={`flex-1 px-6 py-4 rounded-lg transition-all flex items-center justify-center font-bold uppercase tracking-wide border-2 ${
               loading || !generationForm.target_role
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                ? 'bg-gray-700 text-gray-500 cursor-not-allowed border-gray-600'
+                : 'bg-gradient-to-r from-red-600 via-blue-600 to-red-600 text-white hover:from-red-500 hover:to-blue-500 border-blue-500 shadow-lg shadow-blue-500/50'
             }`}
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                 Generating...
               </>
             ) : (
@@ -824,72 +836,75 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
 
   if (showGenerator) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <GeneratorForm />
+      <div className="min-h-screen bg-black p-6">
+        <div className="max-w-4xl mx-auto">
+          <GeneratorForm />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-black p-6">
+      <div className="max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            🎯 Learning Paths
+          <h1 className="text-5xl font-black bg-gradient-to-r from-red-500 via-blue-500 to-red-500 bg-clip-text text-transparent mb-3">
+            🎯 LEARNING PATHS
           </h1>
-          <p className="text-gray-600">
-            Personalized roadmaps to achieve your career goals
+          <p className="text-gray-400 text-lg uppercase tracking-wider">
+            Professional roadmaps to achieve your career goals
           </p>
         </div>
         
         <motion.button
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(37, 99, 235, 0.8)' }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowGenerator(true)}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-8 py-4 bg-gradient-to-r from-red-600 via-blue-600 to-red-600 text-white rounded-lg font-bold uppercase tracking-wide border-2 border-blue-500 shadow-lg shadow-blue-500/50 hover:shadow-blue-500/80 transition-all"
         >
-          Create New Path
+          + Create New Path
         </motion.button>
       </div>
 
       {!userId && (
-        <div className="mb-6 p-6 bg-yellow-50 border-2 border-yellow-200 rounded-lg text-center">
-          <div className="text-yellow-600 text-5xl mb-4">🔐</div>
-          <h3 className="text-xl font-semibold text-yellow-800 mb-2">Sign In Required</h3>
-          <p className="text-yellow-700 mb-4">
+        <div className="mb-8 p-8 bg-gradient-to-br from-gray-900 via-red-900/20 to-gray-900 border-2 border-red-600 rounded-xl text-center">
+          <div className="text-red-500 text-6xl mb-4">🔐</div>
+          <h3 className="text-2xl font-bold text-red-400 mb-3 uppercase tracking-wide">Authentication Required</h3>
+          <p className="text-gray-300 mb-6 text-lg">
             Please sign in to access personalized learning paths and track your progress.
           </p>
           <a 
             href="/signin" 
-            className="inline-block px-6 py-2 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition"
+            className="inline-block px-8 py-4 bg-gradient-to-r from-red-600 to-blue-600 text-white font-bold rounded-lg hover:from-red-500 hover:to-blue-500 transition-all border-2 border-red-500 shadow-lg shadow-red-500/50 uppercase tracking-wide"
           >
-            Sign In
+            ❯ Sign In
           </a>
         </div>
       )}
 
       {userId && loading && (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Loading learning paths...</p>
+        <div className="text-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-red-600 border-r-blue-600 border-b-red-600 border-l-blue-600 mx-auto"></div>
+          <p className="text-blue-400 mt-6 text-lg font-semibold uppercase tracking-wide">Loading learning paths...</p>
         </div>
       )}
 
       {userId && error && !loading && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
-          <div className="flex-shrink-0 text-red-500 mr-3">⚠️</div>
+        <div className="mb-8 p-6 bg-gradient-to-br from-red-900/40 to-black border-2 border-red-600 rounded-xl flex items-start">
+          <div className="flex-shrink-0 text-red-500 mr-4 text-2xl">⚠️</div>
           <div className="flex-1">
-            <h4 className="font-semibold text-red-800 mb-1">Error</h4>
-            <p className="text-red-700 text-sm">{error}</p>
+            <h4 className="font-bold text-red-400 mb-2 text-lg uppercase tracking-wide">Error</h4>
+            <p className="text-red-300 text-sm">{error}</p>
             {error.includes('User not found') && (
-              <p className="text-red-600 text-xs mt-2">
+              <p className="text-red-400 text-xs mt-3 font-semibold">
                 Try signing out and signing in again.
               </p>
             )}
           </div>
           <button 
             onClick={() => setError(null)}
-            className="text-red-500 hover:text-red-700"
+            className="text-red-500 hover:text-red-300 text-xl font-bold"
           >
             ✕
           </button>
@@ -897,24 +912,24 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
       )}
 
       {userId && !loading && !error && learningPaths.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-          <BookOpenIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No Learning Paths Yet</h3>
-          <p className="text-gray-600 mb-6">
+        <div className="text-center py-20 bg-gradient-to-br from-gray-900 via-blue-900/20 to-black rounded-2xl border-2 border-blue-800">
+          <BookOpenIcon className="w-20 h-20 text-blue-500 mx-auto mb-6" />
+          <h3 className="text-3xl font-bold text-blue-400 mb-4 uppercase tracking-wide">No Learning Paths Yet</h3>
+          <p className="text-gray-300 mb-8 text-lg">
             Create your first personalized learning path to get started on your career journey.
           </p>
           {targetRole && (
-            <p className="text-sm text-blue-600 mb-6">
-              Ready to become a <span className="font-semibold">{targetRole}</span>?
+            <p className="text-base text-blue-400 mb-8">
+              Ready to become a <span className="font-bold text-red-400">{targetRole}</span>?
             </p>
           )}
           <motion.button
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(37, 99, 235, 0.8)' }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowGenerator(true)}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center"
+            className="px-10 py-4 bg-gradient-to-r from-red-600 via-blue-600 to-red-600 text-white rounded-lg font-bold uppercase tracking-wide inline-flex items-center border-2 border-blue-500 shadow-lg shadow-blue-500/50"
           >
-            <AcademicCapIcon className="w-5 h-5 mr-2" />
+            <AcademicCapIcon className="w-6 h-6 mr-3" />
             Create Learning Path
           </motion.button>
         </div>
@@ -924,28 +939,28 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Path Selector */}
           <div className="lg:col-span-1">
-            <h2 className="text-xl font-semibold mb-4">Your Paths</h2>
-            <div className="space-y-3">
+            <h2 className="text-2xl font-bold text-blue-400 mb-6 uppercase tracking-wide">Your Paths</h2>
+            <div className="space-y-4">
               {learningPaths.map((path) => (
                 <motion.button
                   key={path.id}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.03, boxShadow: '0 0 20px rgba(59, 130, 246, 0.6)' }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     setSelectedPath(path);
                     fetchMilestoneProgress(path.id);
                   }}
-                  className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
+                  className={`w-full p-5 text-left rounded-xl border-2 transition-all ${
                     selectedPath?.id === path.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                      ? 'border-blue-500 bg-gradient-to-br from-blue-900/50 to-red-900/30 shadow-lg shadow-blue-500/50'
+                      : 'border-gray-700 hover:border-blue-600 bg-gradient-to-br from-gray-900 to-black'
                   }`}
                 >
-                  <div className="font-semibold text-gray-800">{path.target_role}</div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="font-bold text-lg text-white mb-2">{path.target_role}</div>
+                  <div className="text-sm text-blue-400 font-semibold uppercase tracking-wide mt-2">
                     {path.estimated_duration_weeks} weeks • {path.difficulty_level}
                   </div>
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-xs text-gray-400 mt-3 bg-gray-800/50 px-2 py-1 rounded-full inline-block">
                     {path.milestones?.length || 0} milestones
                   </div>
                 </motion.button>
@@ -957,22 +972,22 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
           <div className="lg:col-span-3">
             {selectedPath && (
               <div>
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    Path to {selectedPath.target_role}
+                <div className="bg-gradient-to-r from-red-900/30 via-blue-900/40 to-red-900/30 p-8 rounded-2xl mb-8 border-2 border-blue-700">
+                  <h2 className="text-4xl font-black bg-gradient-to-r from-red-400 via-blue-400 to-red-400 bg-clip-text text-transparent mb-6">
+                    PATH TO {selectedPath.target_role.toUpperCase()}
                   </h2>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600">Duration:</span>
-                      <div className="font-semibold">{selectedPath.estimated_duration_weeks} weeks</div>
+                  <div className="grid grid-cols-3 gap-6 text-sm">
+                    <div className="bg-black/40 p-4 rounded-xl border border-blue-700">
+                      <span className="text-gray-400 uppercase tracking-wide text-xs">Duration:</span>
+                      <div className="font-bold text-2xl text-blue-400 mt-1">{selectedPath.estimated_duration_weeks} weeks</div>
                     </div>
-                    <div>
-                      <span className="text-gray-600">Difficulty:</span>
-                      <div className="font-semibold capitalize">{selectedPath.difficulty_level}</div>
+                    <div className="bg-black/40 p-4 rounded-xl border border-red-700">
+                      <span className="text-gray-400 uppercase tracking-wide text-xs">Difficulty:</span>
+                      <div className="font-bold text-2xl text-red-400 mt-1 capitalize">{selectedPath.difficulty_level}</div>
                     </div>
-                    <div>
-                      <span className="text-gray-600">Milestones:</span>
-                      <div className="font-semibold">{selectedPath.milestones?.length || 0}</div>
+                    <div className="bg-black/40 p-4 rounded-xl border border-blue-700">
+                      <span className="text-gray-400 uppercase tracking-wide text-xs">Milestones:</span>
+                      <div className="font-bold text-2xl text-blue-400 mt-1">{selectedPath.milestones?.length || 0}</div>
                     </div>
                   </div>
                 </div>
@@ -991,6 +1006,7 @@ const LearningPath = ({ userId, targetRole, currentSkills }) => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

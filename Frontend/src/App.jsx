@@ -11,12 +11,12 @@ import TestPredict from "./components/pages/TestPredict";
 import SignIn from "./components/pages/SignIn";
 import SignUp from "./components/pages/SignUp";
 import EnhancedResults from "./components/pages/EnhancedResults";
-//import AdaptiveQuiz from "./components/adaptiveQuiz/AdaptiveQuiz";
+import AdaptiveQuiz from "./components/adaptiveQuiz/AdaptiveQuiz";
 import LearningPath from "./components/learningPath/LearningPath";
-// Removed AdvancedFeatures page
-//import Portfolio from "./components/portfolio/Portfolio";
-//import SkillAssessments from "./components/assessments/SkillAssessments";
-//import LaborMarket from "./components/laborMarket/LaborMarket";
+import Portfolio from "./components/portfolio/Portfolio";
+import SkillAssessment from "./components/skillAssessment/SkillAssessment";
+import LaborMarket from "./components/laborMarket/LaborMarket";
+import FeaturesDashboard from "./components/pages/FeaturesDashboard";
 import "regenerator-runtime/runtime";
 
 
@@ -32,7 +32,12 @@ export default function App() {
         <Route path="/predict" element={<Predict />} />
         <Route path="/test-predict" element={<TestPredict />} />
         <Route path="/results" element={<EnhancedResults />} />
-        {/* Features page removed */}
+        <Route path="/features" element={<FeaturesDashboard />} />
+        <Route path="/adaptive-quiz" element={<AdaptiveQuiz />} />
+        <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/skill-assessment" element={<SkillAssessment />} />
+        <Route path="/labor-market" element={<LaborMarket />} />
+        <Route path="/learning-path" element={<LearningPath />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/voice" element={<VoiceBot />} />
         <Route path="*" element={<NotFound />} />

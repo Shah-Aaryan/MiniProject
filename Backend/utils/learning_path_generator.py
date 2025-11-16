@@ -139,6 +139,20 @@ class LearningPathGenerator:
                 ],
                 'tools': ['Support Ticketing Systems', 'Remote Access Tools', 'Monitoring Tools'],
                 'estimated_weeks': {'beginner': 12, 'intermediate': 8, 'advanced': 6}
+            },
+            'CRM Technical Developer': {
+                'core_skills': [
+                    'CRM Platform Knowledge', 'Database Management',
+                    'API Integration', 'Business Process Analysis',
+                    'Custom Development', 'Data Migration'
+                ],
+                'advanced_skills': [
+                    'Advanced Customization', 'Integration Architecture',
+                    'Performance Optimization', 'Security & Compliance',
+                    'CRM Strategy & Planning'
+                ],
+                'tools': ['Salesforce/Dynamics 365', 'REST APIs', 'SQL', 'Development IDEs'],
+                'estimated_weeks': {'beginner': 20, 'intermediate': 14, 'advanced': 10}
             }
         }
     
@@ -272,6 +286,86 @@ class LearningPathGenerator:
                     'difficulty': 'beginner',
                     'url': 'https://coursera.org/learn/sql-for-data-science',
                     'rating': 4.6,
+                    'cost': 'paid'
+                }
+            ],
+            'CRM Platform Knowledge': [
+                {
+                    'type': 'course',
+                    'title': 'Salesforce Administrator Certification',
+                    'provider': 'Trailhead',
+                    'duration_hours': 80,
+                    'difficulty': 'beginner',
+                    'url': 'https://trailhead.salesforce.com',
+                    'rating': 4.7,
+                    'cost': 'free'
+                },
+                {
+                    'type': 'course',
+                    'title': 'Microsoft Dynamics 365 Fundamentals',
+                    'provider': 'Microsoft Learn',
+                    'duration_hours': 60,
+                    'difficulty': 'beginner',
+                    'url': 'https://learn.microsoft.com/dynamics365',
+                    'rating': 4.5,
+                    'cost': 'free'
+                }
+            ],
+            'API Integration': [
+                {
+                    'type': 'course',
+                    'title': 'REST API Development',
+                    'provider': 'Udemy',
+                    'duration_hours': 50,
+                    'difficulty': 'intermediate',
+                    'url': 'https://udemy.com/course/rest-api/',
+                    'rating': 4.6,
+                    'cost': 'paid'
+                },
+                {
+                    'type': 'practice',
+                    'title': 'API Integration Projects',
+                    'provider': 'GitHub',
+                    'duration_hours': 30,
+                    'difficulty': 'intermediate',
+                    'url': 'https://github.com/topics/api-integration',
+                    'rating': 4.3,
+                    'cost': 'free'
+                }
+            ],
+            'Business Process Analysis': [
+                {
+                    'type': 'course',
+                    'title': 'Business Analysis Fundamentals',
+                    'provider': 'LinkedIn Learning',
+                    'duration_hours': 40,
+                    'difficulty': 'beginner',
+                    'url': 'https://linkedin.com/learning/business-analysis',
+                    'rating': 4.5,
+                    'cost': 'paid'
+                }
+            ],
+            'Custom Development': [
+                {
+                    'type': 'course',
+                    'title': 'Salesforce Developer Certification',
+                    'provider': 'Trailhead',
+                    'duration_hours': 120,
+                    'difficulty': 'intermediate',
+                    'url': 'https://trailhead.salesforce.com/developer',
+                    'rating': 4.8,
+                    'cost': 'free'
+                }
+            ],
+            'Data Migration': [
+                {
+                    'type': 'course',
+                    'title': 'Data Migration Best Practices',
+                    'provider': 'Pluralsight',
+                    'duration_hours': 30,
+                    'difficulty': 'intermediate',
+                    'url': 'https://pluralsight.com/data-migration',
+                    'rating': 4.4,
                     'cost': 'paid'
                 }
             ]

@@ -253,8 +253,8 @@ const EnhancedResults = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white">Loading your results...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-red-600 border-r-blue-600 border-b-red-600 border-l-blue-600 mx-auto mb-6"></div>
+          <p className="text-blue-400 text-lg font-semibold uppercase tracking-wide">Loading your results...</p>
         </div>
       </div>
     );
@@ -262,13 +262,13 @@ const EnhancedResults = () => {
 
   const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
     <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
       onClick={() => onClick(id)}
-      className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+      className={`flex items-center space-x-2 px-5 py-2.5 rounded font-medium transition-colors ${
         isActive 
-          ? 'bg-red-600 text-white shadow-lg' 
-          : 'bg-transparent text-white hover:bg-gray-900 border border-white/20 hover:border-white/40'
+          ? 'bg-blue-600 text-white border border-blue-600' 
+          : 'bg-gray-900 text-gray-400 hover:bg-gray-800 border border-gray-700 hover:border-blue-600'
       }`}
     >
       <Icon className="w-5 h-5" />
@@ -283,161 +283,173 @@ const EnhancedResults = () => {
       className="space-y-6"
     >
       {/* Main Result Card */}
-      <div className="bg-gradient-to-r from-red-600 to-indigo-600 text-white p-8 rounded-2xl shadow-xl border border-white/20">
+      <div className="bg-gray-900 text-white p-6 rounded-lg border border-blue-600">
         <div className="text-center">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring" }}
-            className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6"
+            className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-blue-500"
           >
             <span className="text-4xl">🎯</span>
           </motion.div>
           
-          <h1 className="text-2xl font-semibold mb-2 text-white">Your Predicted Career Path</h1>
-          <h2 className="text-5xl font-bold mb-6 text-white">
+          <h1 className="text-xl font-medium mb-3 text-gray-300">Your Predicted Career Path</h1>
+          <h2 className="text-4xl font-semibold mb-6 text-white">
             {predictionData.prediction}
           </h2>
           
-          <div className="flex items-center justify-center space-x-3 mb-6">
-            <div className="text-4xl font-bold text-white">{predictionData.confidence_percentage}%</div>
-            <div className="text-xl text-white/90">Confidence</div>
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="text-2xl font-semibold text-blue-400">{predictionData.confidence_percentage}%</div>
+            <div className="text-base text-gray-300">Confidence</div>
           </div>
           
-          <div className="w-full max-w-md mx-auto bg-white/20 rounded-full h-4 mb-6">
+          <div className="w-full max-w-md mx-auto bg-gray-800 rounded-full h-2 mb-4">
             <motion.div 
-              className="bg-white h-4 rounded-full"
+              className="bg-blue-600 h-2 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${predictionData.confidence_percentage}%` }}
               transition={{ delay: 0.5, duration: 1 }}
             ></motion.div>
           </div>
           
-          <p className="text-lg text-white/90 max-w-2xl mx-auto">
+          <p className="text-sm text-gray-300 max-w-2xl mx-auto">
             Based on your responses, this career path aligns well with your skills and interests.
           </p>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           onClick={saveToProfile}
-          className={`p-4 rounded-lg border-2 transition-all duration-300 ${
+          className={`p-3 rounded border transition-colors ${
             savedToProfile 
-              ? 'border-green-500 bg-green-500/20 text-green-400' 
-              : 'border-white/20 bg-transparent text-white hover:bg-indigo-600 hover:border-indigo-600'
+              ? 'border-green-600 bg-green-600/20 text-green-400' 
+              : 'border-gray-700 bg-gray-800 text-white hover:bg-gray-700'
           }`}
         >
-          <BookmarkIcon className="w-6 h-6 mx-auto mb-2" />
-          <div className="font-medium">
+          <BookmarkIcon className="w-5 h-5 mx-auto mb-1" />
+          <div className="text-sm">
             {savedToProfile ? 'Saved!' : 'Save to Profile'}
           </div>
         </motion.button>
 
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           onClick={shareResults}
-          className="p-4 rounded-lg border-2 border-white/20 bg-transparent text-white hover:bg-indigo-600 hover:border-indigo-600 transition-all duration-300"
+          className="p-3 rounded border border-gray-700 bg-gray-800 text-white hover:bg-gray-700 transition-colors"
         >
-          <ShareIcon className="w-6 h-6 mx-auto mb-2" />
-          <div className="font-medium">Share Results</div>
+          <ShareIcon className="w-5 h-5 mx-auto mb-1" />
+          <div className="text-sm">Share Results</div>
         </motion.button>
 
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={retakeQuiz}
-          className="p-4 rounded-lg border-2 border-white/20 bg-transparent text-white hover:bg-red-600 hover:border-red-600 transition-all duration-300"
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={() => navigate('/features')}
+          className="p-3 rounded border border-blue-600 bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-colors"
         >
-          <ArrowPathIcon className="w-6 h-6 mx-auto mb-2" />
-          <div className="font-medium">Retake Quiz</div>
+          <BriefcaseIcon className="w-5 h-5 mx-auto mb-1" />
+          <div className="text-sm">Explore Features</div>
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={retakeQuiz}
+          className="p-3 rounded border border-gray-700 bg-gray-800 text-white hover:bg-red-900 hover:border-red-700 transition-colors"
+        >
+          <ArrowPathIcon className="w-5 h-5 mx-auto mb-1" />
+          <div className="text-sm">Retake Quiz</div>
         </motion.button>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-transparent border border-white/20 p-6 rounded-xl hover:border-white/40 transition-all duration-300">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gray-900 border border-blue-600 p-5 rounded-lg hover:border-blue-500 transition-colors">
           <div className="text-center">
-            <ChartBarIcon className="w-8 h-8 text-white mx-auto mb-2" />
-            <div className="text-3xl font-bold text-white mb-1">{predictionData.confidence_percentage}%</div>
-            <div className="text-white/70 text-sm">Prediction Confidence</div>
+            <ChartBarIcon className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+            <div className="text-3xl font-semibold text-blue-400 mb-1">{predictionData.confidence_percentage}%</div>
+            <div className="text-gray-400 text-sm">Prediction Confidence</div>
           </div>
         </div>
 
-        <div className="bg-transparent border border-white/20 p-6 rounded-xl hover:border-white/40 transition-all duration-300">
+        <div className="bg-gray-900 border border-red-600 p-5 rounded-lg hover:border-red-500 transition-colors">
           <div className="text-center">
-            <LightBulbIcon className="w-8 h-8 text-white mx-auto mb-2" />
-            <div className="text-3xl font-bold text-white mb-1">
+            <LightBulbIcon className="w-8 h-8 text-red-400 mx-auto mb-2" />
+            <div className="text-3xl font-semibold text-red-400 mb-1">
               {predictionData.explainable_ai?.counterfactual_tips?.length || 0}
             </div>
-            <div className="text-white/70 text-sm">Improvement Tips</div>
+            <div className="text-gray-400 text-sm">Improvement Tips</div>
           </div>
         </div>
 
-        <div className="bg-transparent border border-white/20 p-6 rounded-xl hover:border-white/40 transition-all duration-300">
+        <div className="bg-gray-900 border border-blue-600 p-5 rounded-lg hover:border-blue-500 transition-colors">
           <div className="text-center">
-            <AcademicCapIcon className="w-8 h-8 text-white mx-auto mb-2" />
-            <div className="text-3xl font-bold text-white mb-1">
+            <AcademicCapIcon className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+            <div className="text-3xl font-semibold text-blue-400 mb-1">
               {Object.keys(predictionData.explainable_ai?.feature_importance?.feature_importance || {}).length}
             </div>
-            <div className="text-white/70 text-sm">Skills Analyzed</div>
+            <div className="text-gray-400 text-sm">Skills Analyzed</div>
           </div>
         </div>
       </div>
 
       {/* Career Insights Section */}
       {careerInsights[predictionData.prediction] && (
-        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+        <div className="bg-gray-900 p-6 rounded-lg border border-gray-700">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-bold text-gray-800 flex items-center">
-              <BriefcaseIcon className="w-8 h-8 text-blue-600 mr-3" />
+            <h3 className="text-xl font-semibold text-white flex items-center">
+              <BriefcaseIcon className="w-6 h-6 text-blue-400 mr-2" />
               Career Insights: {predictionData.prediction}
             </h3>
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(220, 38, 38, 0.6)' }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/chat', { state: { initialMessage: `Tell me more about ${predictionData.prediction} career` }})}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center space-x-3 px-6 py-3 bg-gradient-to-r from-red-600 to-blue-600 text-white rounded-xl hover:from-red-500 hover:to-blue-500 transition-all border-2 border-red-500 shadow-lg shadow-red-500/50 font-bold uppercase tracking-wide"
             >
-              <ChatBubbleLeftRightIcon className="w-5 h-5" />
+              <ChatBubbleLeftRightIcon className="w-6 h-6" />
               <span>Ask AI Chatbot</span>
             </motion.button>
           </div>
 
-          <p className="text-gray-700 mb-6 text-lg">{careerInsights[predictionData.prediction].description}</p>
+          <p className="text-gray-300 mb-8 text-lg leading-relaxed">{careerInsights[predictionData.prediction].description}</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* Salary Info */}
-            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-              <div className="flex items-center mb-2">
-                <CurrencyDollarIcon className="w-6 h-6 text-green-600 mr-2" />
-                <h4 className="font-semibold text-gray-800">Salary Range</h4>
+            <div className="bg-gradient-to-br from-blue-900/40 to-black p-6 rounded-xl border-2 border-blue-700 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/30 transition-all">
+              <div className="flex items-center mb-4">
+                <CurrencyDollarIcon className="w-8 h-8 text-blue-400 mr-3" />
+                <h4 className="font-bold text-blue-400 uppercase tracking-wide">Salary Range</h4>
               </div>
-              <p className="text-2xl font-bold text-green-700">{careerInsights[predictionData.prediction].salary}</p>
-              <p className="text-sm text-gray-600 mt-1">Annual (USD)</p>
+              <p className="text-3xl font-black text-white mb-2">{careerInsights[predictionData.prediction].salary}</p>
+              <p className="text-sm text-gray-400 font-semibold">Annual (USD)</p>
             </div>
 
             {/* Growth Rate */}
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <div className="flex items-center mb-2">
-                <ArrowTrendingUpIcon className="w-6 h-6 text-blue-600 mr-2" />
-                <h4 className="font-semibold text-gray-800">Job Market Growth</h4>
+            <div className="bg-gradient-to-br from-red-900/40 to-black p-6 rounded-xl border-2 border-red-700 hover:border-red-500 hover:shadow-lg hover:shadow-red-500/30 transition-all">
+              <div className="flex items-center mb-4">
+                <ArrowTrendingUpIcon className="w-8 h-8 text-red-400 mr-3" />
+                <h4 className="font-bold text-red-400 uppercase tracking-wide">Job Market Growth</h4>
               </div>
-              <p className="text-xl font-bold text-blue-700">{careerInsights[predictionData.prediction].growth}</p>
-              <p className="text-sm text-gray-600 mt-1">Next 10 years</p>
+              <p className="text-2xl font-black text-white mb-2">{careerInsights[predictionData.prediction].growth}</p>
+              <p className="text-sm text-gray-400 font-semibold">Next 10 years</p>
             </div>
           </div>
 
           {/* Key Skills */}
-          <div className="mb-6">
-            <h4 className="font-semibold text-gray-800 mb-3">🔑 Key Skills Required:</h4>
-            <div className="flex flex-wrap gap-2">
+          <div className="mb-8">
+            <h4 className="font-bold text-blue-400 mb-4 text-lg uppercase tracking-wide flex items-center">
+              <span className="mr-2">🔑</span> Key Skills Required
+            </h4>
+            <div className="flex flex-wrap gap-3">
               {careerInsights[predictionData.prediction].keySkills.map((skill, idx) => (
-                <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                <span key={idx} className="px-4 py-2 bg-gradient-to-r from-blue-900/50 to-red-900/40 text-blue-300 rounded-xl text-sm font-bold border-2 border-blue-700 hover:border-blue-500 transition-colors uppercase tracking-wide">
                   {skill}
                 </span>
               ))}
@@ -445,11 +457,13 @@ const EnhancedResults = () => {
           </div>
 
           {/* Industries */}
-          <div className="mb-6">
-            <h4 className="font-semibold text-gray-800 mb-3">🏢 Top Industries:</h4>
-            <div className="flex flex-wrap gap-2">
+          <div className="mb-8">
+            <h4 className="font-bold text-blue-400 mb-4 text-lg uppercase tracking-wide flex items-center">
+              <span className="mr-2">🏢</span> Top Industries
+            </h4>
+            <div className="flex flex-wrap gap-3">
               {careerInsights[predictionData.prediction].industries.map((industry, idx) => (
-                <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                <span key={idx} className="px-4 py-2 bg-gradient-to-r from-red-900/50 to-blue-900/40 text-red-300 rounded-xl text-sm font-bold border-2 border-red-700 hover:border-red-500 transition-colors uppercase tracking-wide">
                   {industry}
                 </span>
               ))}
@@ -457,32 +471,38 @@ const EnhancedResults = () => {
           </div>
 
           {/* Daily Tasks */}
-          <div className="mb-6">
-            <h4 className="font-semibold text-gray-800 mb-3">📋 Typical Daily Tasks:</h4>
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="mb-8">
+            <h4 className="font-bold text-blue-400 mb-4 text-lg uppercase tracking-wide flex items-center">
+              <span className="mr-2">📋</span> Typical Daily Tasks
+            </h4>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {careerInsights[predictionData.prediction].dailyTasks.map((task, idx) => (
-                <li key={idx} className="flex items-center text-gray-700">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                  {task}
+                <li key={idx} className="flex items-center text-gray-300 bg-gray-800/50 p-3 rounded-lg border-l-4 border-blue-600">
+                  <span className="w-3 h-3 bg-blue-500 rounded-full mr-3 flex-shrink-0"></span>
+                  <span className="font-medium">{task}</span>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* Career Path */}
-          <div className="mb-6">
-            <h4 className="font-semibold text-gray-800 mb-3">🎯 Career Progression Path:</h4>
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
-              <p className="text-gray-800 font-medium">{careerInsights[predictionData.prediction].careerPath}</p>
+          <div className="mb-8">
+            <h4 className="font-bold text-blue-400 mb-4 text-lg uppercase tracking-wide flex items-center">
+              <span className="mr-2">🎯</span> Career Progression Path
+            </h4>
+            <div className="bg-gradient-to-r from-blue-900/40 via-red-900/40 to-blue-900/40 p-6 rounded-xl border-2 border-blue-700">
+              <p className="text-white font-bold text-lg leading-relaxed">{careerInsights[predictionData.prediction].careerPath}</p>
             </div>
           </div>
 
           {/* Top Companies */}
           <div>
-            <h4 className="font-semibold text-gray-800 mb-3">🌟 Top Companies Hiring:</h4>
-            <div className="flex flex-wrap gap-3">
+            <h4 className="font-bold text-blue-400 mb-4 text-lg uppercase tracking-wide flex items-center">
+              <span className="mr-2">🌟</span> Top Companies Hiring
+            </h4>
+            <div className="flex flex-wrap gap-4">
               {careerInsights[predictionData.prediction].topCompanies.map((company, idx) => (
-                <span key={idx} className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-medium border border-gray-300">
+                <span key={idx} className="px-6 py-3 bg-gradient-to-br from-gray-800 to-black text-white rounded-xl font-bold border-2 border-blue-700 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/30 transition-all">
                   {company}
                 </span>
               ))}
@@ -492,8 +512,8 @@ const EnhancedResults = () => {
       )}
 
       {/* Next Steps */}
-      <div className="bg-transparent border border-white/20 p-6 rounded-xl">
-        <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+      <div className="bg-gradient-to-br from-gray-900 to-black border-2 border-blue-700 p-8 rounded-2xl">
+        <h3 className="text-2xl font-black text-blue-400 mb-6 flex items-center uppercase tracking-wide">
           <span className="mr-2">🚀</span>
           Recommended Next Steps
         </h3>

@@ -146,12 +146,15 @@ REST_FRAMEWORK = {
 # -----------------------------
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:5173",  # Vite default port
     "http://localhost:8000",
     "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",  # Vite default port
     "http://127.0.0.1:8000",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
+CORS_ALLOW_HEADERS = ['*']
 # Optional for full development freedom
 CORS_ALLOW_ALL_ORIGINS = True
 

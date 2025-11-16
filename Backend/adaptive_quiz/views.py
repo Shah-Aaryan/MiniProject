@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
 from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 from .models import (
     QuizCategory, Question, QuestionOption,
     AdaptiveQuiz, QuizAttempt, UserSkillProfile
@@ -65,14 +66,23 @@ class AdaptiveQuizViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     
     def get_queryset(self):
-        """Return quizzes for the authenticated user"""
-        return AdaptiveQuiz.objects.filter(user=self.request.user)
+        """Return quizzes for the authenticated user or test user"""
+        user = self.request.user if self.request.user.is_authenticated else self._get_or_create_test_user()
+        return AdaptiveQuiz.objects.filter(user=user).order_by('-started_at')
     
     def get_serializer_class(self):
         """Return appropriate serializer based on action"""
         if self.action == 'retrieve':
             return AdaptiveQuizDetailSerializer
         return AdaptiveQuizSerializer
+    
+    def _get_or_create_test_user(self):
+        """Get or create a test user for anonymous quiz sessions"""
+        user, created = User.objects.get_or_create(
+            username='test_quiz_user',
+            defaults={'email': 'test@quiz.com'}
+        )
+        return user
     
     @action(detail=False, methods=['post'])
     def start(self, request):
@@ -84,23 +94,28 @@ class AdaptiveQuizViewSet(viewsets.ModelViewSet):
         category_id = serializer.validated_data['category_id']
         category = get_object_or_404(QuizCategory, id=category_id)
         
+        # Get user (authenticated or test user)
+        user = request.user if request.user.is_authenticated else self._get_or_create_test_user()
+        
         # Check if user has an incomplete quiz for this category
         incomplete_quiz = AdaptiveQuiz.objects.filter(
-            user=request.user,
+            user=user,
             category=category,
             is_completed=False
         ).first()
         
         if incomplete_quiz:
+            # Return existing quiz with first question
+            first_question = self._get_next_question(incomplete_quiz)
             return Response({
-                'message': 'You have an incomplete quiz for this category.',
-                'quiz_id': incomplete_quiz.id,
-                'quiz': AdaptiveQuizSerializer(incomplete_quiz).data
+                'message': 'Continuing incomplete quiz',
+                'quiz': AdaptiveQuizSerializer(incomplete_quiz).data,
+                'question': QuestionSerializer(first_question).data if first_question else None
             }, status=status.HTTP_200_OK)
         
         # Create new quiz
         quiz = AdaptiveQuiz.objects.create(
-            user=request.user,
+            user=user,
             category=category,
             current_difficulty='easy'
         )
@@ -413,15 +428,25 @@ class UserSkillProfileViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = []
     permission_classes = [AllowAny]
     
+    def _get_or_create_test_user(self):
+        """Get or create a test user for anonymous sessions"""
+        user, created = User.objects.get_or_create(
+            username='test_quiz_user',
+            defaults={'email': 'test@quiz.com'}
+        )
+        return user
+    
     def get_queryset(self):
-        """Return skill profile for the authenticated user"""
-        return UserSkillProfile.objects.filter(user=self.request.user)
+        """Return skill profile for the authenticated user or test user"""
+        user = self.request.user if self.request.user.is_authenticated else self._get_or_create_test_user()
+        return UserSkillProfile.objects.filter(user=user)
     
     @action(detail=False, methods=['get'])
     def my_profile(self, request):
         """Get current user's skill profile"""
+        user = request.user if request.user.is_authenticated else self._get_or_create_test_user()
         profile, created = UserSkillProfile.objects.get_or_create(
-            user=request.user
+            user=user
         )
         serializer = self.get_serializer(profile)
         return Response(serializer.data)
@@ -429,7 +454,7 @@ class UserSkillProfileViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def progress(self, request):
         """Get user's quiz progress and statistics"""
-        user = request.user
+        user = request.user if request.user.is_authenticated else self._get_or_create_test_user()
         profile, created = UserSkillProfile.objects.get_or_create(user=user)
         
         # Get quiz statistics

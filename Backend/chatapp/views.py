@@ -4,24 +4,27 @@ import os
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 
-import google.generativeai as genai
+from groq import Groq
 from dotenv import load_dotenv
 
 
 # Load environment variables
 load_dotenv()
 
-# Get API key with fallback
+# Get API key - now using Groq
 try:
-    API_KEY = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
-    if API_KEY and API_KEY != "your_gemini_api_key_here":
-        genai.configure(api_key=API_KEY)
+    API_KEY = os.environ.get("GROQ_API_KEY")
+    if API_KEY and API_KEY != "your_groq_api_key_here":
+        groq_client = Groq(api_key=API_KEY)
     else:
         API_KEY = None
+        groq_client = None
 except Exception as e:
     API_KEY = None
-    print(f"⚠️ Warning: Error configuring Google API: {str(e)}")
+    groq_client = None
+    print(f"⚠️ Warning: Error configuring Groq API: {str(e)}")
 
 
 # ---------------- CHATBOT VIEW ----------------
@@ -30,6 +33,7 @@ class ChatbotView(APIView):
     Simple Google Generative AI Chatbot (No RAG)
     Direct conversation with Gemini model
     """
+    permission_classes = [AllowAny]  # Allow unauthenticated access
 
     def post(self, request):
         user_message = request.data.get("message")
@@ -37,15 +41,15 @@ class ChatbotView(APIView):
             return Response({"error": "Message not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
         # If no API key
-        if not API_KEY:
+        if not API_KEY or not groq_client:
             fallback_response = {
-                "output_text": "I'm sorry, but I'm currently unable to provide AI-powered responses because the Google API key is not configured. To enable AI chat functionality, please add a valid GOOGLE_API_KEY to your .env file."
+                "output_text": "I'm sorry, but I'm currently unable to provide AI-powered responses because the Groq API key is not configured. To enable AI chat functionality, please add a valid GROQ_API_KEY to your .env file. Get your free API key at: https://console.groq.com"
             }
             return Response({"response": fallback_response})
 
         # Generate AI response
         try:
-            response_text = ChatbotResponse.get_chatbot_response(user_message)
+            response_text = ChatbotResponse.get_chatbot_response(user_message, groq_client)
             return Response({"response": {"output_text": response_text}})
         except Exception as e:
             print(f"❌ Chatbot error: {str(e)}")
@@ -58,14 +62,14 @@ class ChatbotView(APIView):
 # ---------------- CHATBOT LOGIC ----------------
 class ChatbotResponse:
     """
-    Simple Generative AI Chatbot - Direct Gemini API
+    AI Chatbot using Groq API
     Specialized in IT Career Guidance
     """
 
     @staticmethod
-    def get_chatbot_response(user_message):
+    def get_chatbot_response(user_message, groq_client):
         """
-        Generate AI response using Google Generative AI (Gemini)
+        Generate AI response using Groq API (Llama 3)
         """
         try:
             # Create system instruction for career guidance context
@@ -78,31 +82,25 @@ class ChatbotResponse:
             Provide practical advice, industry insights, learning resources, and career guidance. Be conversational, friendly, and encouraging.
             If asked about non-IT topics, politely redirect to IT career-related questions."""
 
-            # Initialize the model with system instruction
-            model = genai.GenerativeModel(
-                model_name='gemini-1.5-flash',
-                generation_config={
-                    "temperature": 0.7,
-                    "top_p": 0.95,
-                    "top_k": 40,
-                    "max_output_tokens": 1024,
-                }
+            # Call Groq API
+            chat_completion = groq_client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_instruction
+                    },
+                    {
+                        "role": "user",
+                        "content": user_message
+                    }
+                ],
+                model="llama-3.3-70b-versatile",  # Latest fast model
+                temperature=0.7,
+                max_tokens=1024,
+                top_p=0.95,
             )
-
-            # Start a chat session
-            chat = model.start_chat(history=[])
             
-            # Create enhanced prompt with context
-            enhanced_prompt = f"""{system_instruction}
-
-User Question: {user_message}
-
-Please provide a helpful, detailed response about IT careers and technology fields."""
-
-            # Generate response
-            response = chat.send_message(enhanced_prompt)
-            
-            return response.text
+            return chat_completion.choices[0].message.content
 
         except Exception as e:
             print(f"❌ Error generating AI response: {str(e)}")
