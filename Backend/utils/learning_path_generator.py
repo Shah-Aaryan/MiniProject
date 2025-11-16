@@ -153,6 +153,49 @@ class LearningPathGenerator:
                 ],
                 'tools': ['Salesforce/Dynamics 365', 'REST APIs', 'SQL', 'Development IDEs'],
                 'estimated_weeks': {'beginner': 20, 'intermediate': 14, 'advanced': 10}
+            },
+            'Systems Security Administrator': {
+                'core_skills': [
+                    'Operating Systems Administration', 'Network Security',
+                    'Security Policies & Procedures', 'Access Control',
+                    'System Hardening', 'Vulnerability Assessment',
+                    'Security Monitoring'
+                ],
+                'advanced_skills': [
+                    'Security Architecture', 'Incident Response',
+                    'Security Automation', 'Compliance Management',
+                    'Identity & Access Management', 'Threat Analysis'
+                ],
+                'tools': ['SIEM Tools', 'Security Scanners', 'Firewalls', 'IDS/IPS'],
+                'estimated_weeks': {'beginner': 26, 'intermediate': 18, 'advanced': 12}
+            },
+            'Applications Developer': {
+                'core_skills': [
+                    'Programming Fundamentals', 'Application Architecture',
+                    'Database Design', 'API Development',
+                    'Version Control', 'Testing & QA'
+                ],
+                'advanced_skills': [
+                    'Microservices', 'Cloud Integration',
+                    'Performance Tuning', 'DevOps Practices',
+                    'Application Security'
+                ],
+                'tools': ['IDEs', 'Container Tools', 'CI/CD Pipelines', 'Monitoring Tools'],
+                'estimated_weeks': {'beginner': 22, 'intermediate': 15, 'advanced': 10}
+            },
+            'Software Engineer': {
+                'core_skills': [
+                    'Programming Languages', 'Data Structures & Algorithms',
+                    'System Design', 'Software Architecture',
+                    'Version Control', 'Testing Methodologies'
+                ],
+                'advanced_skills': [
+                    'Distributed Systems', 'Scalability',
+                    'Performance Engineering', 'Design Patterns',
+                    'Technical Leadership'
+                ],
+                'tools': ['Development Tools', 'Debugging Tools', 'Profilers', 'Collaboration Tools'],
+                'estimated_weeks': {'beginner': 28, 'intermediate': 18, 'advanced': 12}
             }
         }
     
