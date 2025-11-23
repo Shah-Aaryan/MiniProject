@@ -29,9 +29,13 @@ const JobRoleSearch = () => {
       if (filters.remote) params.remote = 'true';
 
       const response = await getJobRoles(params);
-      setJobRoles(response.data || []);
+      console.log('Job roles response:', response);
+      // Handle both response.data and direct array response
+      const rolesData = Array.isArray(response) ? response : (response.data || []);
+      setJobRoles(Array.isArray(rolesData) ? rolesData : []);
     } catch (error) {
       console.error('Error fetching job roles:', error);
+      setJobRoles([]);
     } finally {
       setLoading(false);
     }

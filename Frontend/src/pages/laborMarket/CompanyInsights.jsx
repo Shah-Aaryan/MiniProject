@@ -30,17 +30,21 @@ const CompanyInsights = () => {
       if (filters.hiring) params.hiring = filters.hiring;
 
       const response = await getCompanies(params);
-      setCompanies(response.data || []);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setCompanies(data);
     } catch (error) {
       console.error('Error fetching companies:', error);
+      setCompanies([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredCompanies = companies.filter((company) =>
-    company.company_name?.toLowerCase().includes(filters.search.toLowerCase())
-  );
+  const filteredCompanies = Array.isArray(companies) 
+    ? companies.filter((company) =>
+        company.company_name?.toLowerCase().includes(filters.search.toLowerCase())
+      )
+    : [];
 
   if (loading) {
     return (

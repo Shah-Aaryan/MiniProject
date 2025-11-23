@@ -20,9 +20,13 @@ const EmergingRoles = () => {
       setLoading(true);
       const response =
         sortBy === 'score' ? await getEmergingRoles() : await getHighestGrowthRoles();
-      setRoles(response.data || []);
+      
+      // Ensure response is an array
+      const rolesData = Array.isArray(response.data) ? response.data : [];
+      setRoles(rolesData);
     } catch (error) {
       console.error('Error fetching emerging roles:', error);
+      setRoles([]);
     } finally {
       setLoading(false);
     }

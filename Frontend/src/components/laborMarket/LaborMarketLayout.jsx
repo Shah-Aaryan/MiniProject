@@ -5,13 +5,10 @@ import {
   ChartBarIcon,
   BuildingOfficeIcon,
   BriefcaseIcon,
-  CurrencyDollarIcon,
   FireIcon,
   BuildingOffice2Icon,
   SparklesIcon,
-  UserGroupIcon,
   AcademicCapIcon,
-  ArrowTrendingUpIcon,
 } from '@heroicons/react/24/outline';
 
 const LaborMarketLayout = ({ children }) => {
@@ -24,9 +21,7 @@ const LaborMarketLayout = ({ children }) => {
     { path: '/market/skills', label: 'Skills', icon: FireIcon },
     { path: '/market/companies', label: 'Companies', icon: BuildingOffice2Icon },
     { path: '/market/emerging', label: 'Emerging Roles', icon: SparklesIcon },
-    { path: '/market/recommend', label: 'Career Path', icon: UserGroupIcon },
     { path: '/market/gap-analysis', label: 'Skill Gap', icon: AcademicCapIcon },
-    { path: '/market/trends', label: 'Trends', icon: ArrowTrendingUpIcon },
   ];
 
   return (

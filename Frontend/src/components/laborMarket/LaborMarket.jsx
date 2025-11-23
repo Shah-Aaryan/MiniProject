@@ -10,5 +10,6 @@ const LaborMarket = ({ userId }) => {
   }, [navigate]);
 
   return null;
+};
 
 export default LaborMarket;

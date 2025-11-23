@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaClock, FaTrophy, FaLightbulb, FaSpinner, FaCheckCircle } from 'react-icons/fa';
+import { FaClock, FaTrophy, FaLightbulb, FaSpinner, FaCheckCircle, FaBrain, FaFire, FaStar } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
@@ -17,7 +18,7 @@ const QuizTaking = () => {
   const [error, setError] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
-  const [totalQuestionsRequired, setTotalQuestionsRequired] = useState(20);
+  const [totalQuestionsRequired] = useState(10); // Fixed: exactly 10 questions per quiz
 
   useEffect(() => {
     if (quizId) {
@@ -185,10 +186,10 @@ const QuizTaking = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <FaSpinner className="animate-spin text-6xl text-blue-600 mx-auto mb-4" />
-          <p className="text-xl text-gray-600">Loading question...</p>
+          <FaSpinner className="animate-spin text-6xl text-blue-500 mx-auto mb-4" />
+          <p className="text-xl text-gray-300">Loading question...</p>
         </div>
       </div>
     );
@@ -196,14 +197,14 @@ const QuizTaking = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-          <div className="text-red-600 text-center mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
+        <div className="bg-black/60 backdrop-blur-md rounded-xl shadow-lg p-8 max-w-md w-full border border-red-900/50">
+          <div className="text-red-400 text-center mb-4">
             <p className="text-xl font-semibold">{error}</p>
           </div>
           <button
             onClick={() => navigate('/quiz/categories')}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+            className="w-full bg-gradient-to-r from-blue-600 to-red-600 text-white py-3 rounded-lg hover:from-blue-700 hover:to-red-700 transition"
           >
             Back to Categories
           </button>
@@ -213,125 +214,211 @@ const QuizTaking = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Quiz Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        {/* Enhanced Quiz Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-black/60 backdrop-blur-md rounded-xl shadow-lg p-6 mb-6 border-t-4 border-blue-600"
+        >
           <div className="flex flex-wrap justify-between items-center gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">
-                {quiz?.category_name || 'Quiz'}
-              </h2>
-              <p className="text-gray-600">
-                Question {questionsAnswered + 1} of 20
-              </p>
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-900 to-red-900 rounded-lg flex items-center justify-center mr-3">
+                <FaBrain className="text-2xl text-blue-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-red-400 bg-clip-text text-transparent">
+                  {quiz?.category_name || 'Quiz'}
+                </h2>
+                <p className="text-gray-300 font-semibold">
+                  Question {questionsAnswered + 1} of {totalQuestionsRequired}
+                </p>
+              </div>
             </div>
 
-            <div className="flex gap-6">
-              {/* Timer */}
-              <div className="flex items-center bg-blue-100 px-4 py-2 rounded-lg">
-                <FaClock className="text-blue-600 mr-2" />
-                <span className={`font-semibold ${timeLeft < 10 ? 'text-red-600' : 'text-blue-600'}`}>
+            <div className="flex gap-4">
+              {/* Enhanced Timer */}
+              <motion.div 
+                animate={{ scale: timeLeft < 10 ? [1, 1.05, 1] : 1 }}
+                transition={{ repeat: timeLeft < 10 ? Infinity : 0, duration: 1 }}
+                className={`flex items-center ${
+                  timeLeft < 10 ? 'bg-red-900/50' : 'bg-blue-900/50'
+                } px-4 py-2 rounded-lg shadow-md border ${
+                  timeLeft < 10 ? 'border-red-600' : 'border-blue-600'
+                }`}
+              >
+                <FaClock className={`${timeLeft < 10 ? 'text-red-400' : 'text-blue-400'} mr-2`} />
+                <span className={`font-bold text-lg ${timeLeft < 10 ? 'text-red-400' : 'text-blue-400'}`}>
                   {formatTime(timeLeft)}
                 </span>
-              </div>
+              </motion.div>
 
-              {/* Score */}
-              <div className="flex items-center bg-green-100 px-4 py-2 rounded-lg">
-                <FaTrophy className="text-green-600 mr-2" />
-                <span className="font-semibold text-green-600">
+              {/* Enhanced Score */}
+              <div className="flex items-center bg-gradient-to-r from-red-900/50 to-red-800/50 px-4 py-2 rounded-lg shadow-md border border-red-600">
+                <FaTrophy className="text-red-400 mr-2" />
+                <span className="font-bold text-lg text-red-300">
                   {quiz?.total_score || 0} pts
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mt-4">
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-gradient-to-r from-blue-600 to-purple-600 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${getProgressPercentage()}%` }}
-              />
+          {/* Enhanced Progress Bar */}
+          <div className="mt-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-gray-300">Progress</span>
+              <div className="flex items-center">
+                <FaFire className="text-red-400 mr-2" />
+                <span className="text-sm font-semibold text-gray-300">
+                  {questionsAnswered} answered
+                </span>
+              </div>
             </div>
-            <p className="text-sm text-gray-600 mt-2 text-right">
-              {Math.round(getProgressPercentage())}% Complete
-            </p>
-          </div>
-        </div>
-
-        {/* Question Card */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
-          {/* Difficulty Indicator */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center">
-              <FaLightbulb className="text-yellow-500 mr-2" />
-              <span className="text-sm text-gray-600 capitalize">
-                {currentQuestion?.difficulty || 'Medium'} Difficulty
-              </span>
-            </div>
-            <span className="text-sm text-purple-600 font-semibold">
-              {currentQuestion?.points || 10} Points
-            </span>
-          </div>
-
-          {/* Question Text */}
-          <h3 className="text-2xl font-semibold text-gray-800 mb-8">
-            {currentQuestion?.question_text}
-          </h3>
-
-          {/* Answer Options */}
-          <div className="space-y-4">
-            {currentQuestion?.options?.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setSelectedAnswer(option.id)}
-                disabled={submitting}
-                className={`w-full text-left p-5 rounded-lg border-2 transition-all duration-200 ${
-                  selectedAnswer === option.id
-                    ? 'border-purple-600 bg-purple-50 shadow-md'
-                    : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50'
-                } ${submitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            <div className="w-full bg-gray-800 rounded-full h-4 shadow-inner border border-gray-700">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${getProgressPercentage()}%` }}
+                transition={{ duration: 0.5 }}
+                className="bg-gradient-to-r from-blue-600 to-red-600 h-4 rounded-full flex items-center justify-end pr-2"
               >
-                <div className="flex items-center">
-                  <div
-                    className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center ${
-                      selectedAnswer === option.id
-                        ? 'border-purple-600 bg-purple-600'
-                        : 'border-gray-300'
-                    }`}
-                  >
-                    {selectedAnswer === option.id && (
-                      <FaCheckCircle className="text-white text-sm" />
-                    )}
-                  </div>
-                  <span className="text-lg text-gray-700">{option.option_text}</span>
-                </div>
-              </button>
-            ))}
+                {getProgressPercentage() > 15 && (
+                  <span className="text-xs text-white font-bold">
+                    {Math.round(getProgressPercentage())}%
+                  </span>
+                )}
+              </motion.div>
+            </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-between items-center">
-          <button
+        {/* Enhanced Question Card */}
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={currentQuestion?.id}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+            className="bg-black/60 backdrop-blur-md rounded-xl shadow-lg p-8 mb-6 border border-red-900/30"
+          >
+            {/* Enhanced Difficulty Indicator */}
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center space-x-3">
+                <div className={`px-3 py-1 rounded-full flex items-center ${
+                  currentQuestion?.difficulty === 'easy' ? 'bg-green-100' :
+                  currentQuestion?.difficulty === 'medium' ? 'bg-yellow-100' :
+                  'bg-red-100'
+                }`}>
+                  <FaLightbulb className={`mr-2 ${
+                    currentQuestion?.difficulty === 'easy' ? 'text-green-600' :
+                    currentQuestion?.difficulty === 'medium' ? 'text-yellow-600' :
+                    'text-red-600'
+                  }`} />
+                  <span className={`text-sm font-semibold capitalize ${
+                    currentQuestion?.difficulty === 'easy' ? 'text-green-700' :
+                    currentQuestion?.difficulty === 'medium' ? 'text-yellow-700' :
+                    'text-red-700'
+                  }`}>
+                    {currentQuestion?.difficulty || 'Medium'}
+                  </span>
+                </div>
+                {currentQuestion?.skill_tags && currentQuestion.skill_tags.length > 0 && (
+                  <div className="flex gap-2">
+                    {currentQuestion.skill_tags.slice(0, 2).map((tag, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-blue-900/50 text-blue-300 rounded text-xs font-semibold border border-blue-700">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center bg-gradient-to-r from-red-900/50 to-blue-900/50 px-3 py-1 rounded-full border border-red-700">
+                <FaStar className="text-red-400 mr-1" />
+                <span className="text-sm text-red-300 font-bold">
+                  {currentQuestion?.points || 10} Points
+                </span>
+              </div>
+            </div>
+
+            {/* Enhanced Question Text */}
+            <div className="bg-gradient-to-br from-blue-900/20 to-red-900/20 p-6 rounded-lg mb-8 border-l-4 border-blue-600">
+              <h3 className="text-2xl font-semibold text-white">
+                {currentQuestion?.question_text}
+              </h3>
+            </div>
+
+            {/* Enhanced Answer Options */}
+            <div className="space-y-4">
+              {currentQuestion?.options?.map((option, index) => (
+                <motion.button
+                  key={option.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02, x: 5 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSelectedAnswer(option.id)}
+                  disabled={submitting}
+                  className={`w-full p-5 rounded-xl border-2 text-left transition-all duration-200 ${
+                    selectedAnswer === option.id
+                      ? 'border-blue-600 bg-gradient-to-r from-blue-900/50 to-red-900/50 shadow-lg'
+                      : 'border-gray-700 bg-gray-800/50 hover:border-blue-500 hover:shadow-md'
+                  } ${submitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <div className="flex items-center">
+                    <div
+                      className={`w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center flex-shrink-0 ${
+                        selectedAnswer === option.id
+                          ? 'border-blue-600 bg-blue-600'
+                          : 'border-gray-600'
+                      }`}
+                    >
+                      {selectedAnswer === option.id && (
+                        <FaCheckCircle className="text-white" />
+                      )}
+                    </div>
+                    <span className={`text-lg ${
+                      selectedAnswer === option.id ? 'text-white font-semibold' : 'text-gray-300'
+                    }`}>
+                      {option.option_text}
+                    </span>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Enhanced Action Buttons */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="flex justify-between items-center gap-4"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
               if (window.confirm('Are you sure you want to quit this quiz?')) {
                 completeQuiz();
               }
             }}
-            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+            className="px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition font-semibold shadow-md border border-gray-700"
           >
             Quit Quiz
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
+            whileHover={selectedAnswer && !submitting ? { scale: 1.05 } : {}}
+            whileTap={selectedAnswer && !submitting ? { scale: 0.95 } : {}}
             onClick={handleNextQuestion}
             disabled={!selectedAnswer || submitting}
-            className={`px-8 py-3 rounded-lg font-semibold transition-all duration-300 ${
+            className={`px-8 py-4 rounded-lg font-semibold transition-all duration-300 shadow-lg ${
               selectedAnswer && !submitting
-                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 transform hover:scale-105'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-blue-600 to-red-600 text-white hover:from-blue-700 hover:to-red-700 hover:shadow-xl'
+                : 'bg-gray-700 text-gray-500 cursor-not-allowed border border-gray-600'
             }`}
           >
             {submitting ? (
@@ -340,10 +427,15 @@ const QuizTaking = () => {
                 Submitting...
               </span>
             ) : (
-              'Next Question →'
+              <span className="flex items-center">
+                Next Question
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </span>
             )}
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       </div>
     </div>
   );

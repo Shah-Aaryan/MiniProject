@@ -42,10 +42,15 @@ const JobRoleDetails = () => {
 
       setRole(roleRes.data);
       setSalaryInsights(salaryRes.data);
-      setMarketTrends(trendsRes.data || []);
+      
+      // Ensure trends is an array
+      const trendsData = Array.isArray(trendsRes.data) ? trendsRes.data : [];
+      setMarketTrends(trendsData);
+      
       setSkills(skillsRes.data);
     } catch (error) {
       console.error('Error fetching role details:', error);
+      setMarketTrends([]);
     } finally {
       setLoading(false);
     }

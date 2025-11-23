@@ -27,9 +27,11 @@ const IndustryExplorer = () => {
     try {
       setLoading(true);
       const response = await getIndustries();
-      setIndustries(response.data || []);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setIndustries(data);
     } catch (error) {
       console.error('Error fetching industries:', error);
+      setIndustries([]);
     } finally {
       setLoading(false);
     }
@@ -38,9 +40,11 @@ const IndustryExplorer = () => {
   const fetchJobRoles = async (industryId) => {
     try {
       const response = await getIndustryJobRoles(industryId);
-      setJobRoles(response.data || []);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setJobRoles(data);
     } catch (error) {
       console.error('Error fetching job roles:', error);
+      setJobRoles([]);
     }
   };
 

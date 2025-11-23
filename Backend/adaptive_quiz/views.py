@@ -140,47 +140,33 @@ class AdaptiveQuizViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Ensure minimum questions before allowing completion
-        # Dynamic minimum based on category size
-        category_question_count = quiz.category.questions.filter(is_active=True).count()
-        if category_question_count <= 3:
-            MIN_QUESTIONS = 9  # For very small categories (3 questions), require 9 attempts
-        elif category_question_count <= 5:
-            MIN_QUESTIONS = 12  # For small categories (4-5 questions), require 12 attempts
-        else:
-            MIN_QUESTIONS = min(20, category_question_count * 2)  # For larger categories
-        
+        # Enforce exactly 10 questions per quiz, no repetition
+        REQUIRED_QUESTIONS = 10
         questions_answered = quiz.total_questions
         
-        # Get next question (allow reuse if needed)
-        answered_question_ids = list(quiz.attempts.values_list('question_id', flat=True))
+        # Get list of already answered question IDs
+        answered_question_ids = list(quiz.attempts.values_list('question_id', flat=True).distinct())
         
-        # Check if we've reached minimum
-        if questions_answered >= MIN_QUESTIONS:
-            # Can complete - try to get unique question first
-            next_question = self._get_next_question(quiz, exclude_ids=answered_question_ids)
-            if not next_question:
-                # Quiz complete - reached minimum and no more unique questions
-                return Response({
-                    'message': 'Quiz completed! Well done!',
-                    'quiz_complete': True,
-                    'total_answered': questions_answered,
-                    'minimum_required': MIN_QUESTIONS
-                }, status=status.HTTP_200_OK)
-        else:
-            # Haven't reached minimum - must continue (reuse questions if needed)
-            next_question = self._get_next_question(quiz, exclude_ids=answered_question_ids)
-            if not next_question:
-                # No unique questions left, allow reuse
-                next_question = self._get_next_question(quiz, exclude_ids=[])
-            
-            if not next_question:
-                # Still no questions, force complete
-                return Response({
-                    'message': 'Quiz completed.',
-                    'quiz_complete': True,
-                    'total_answered': questions_answered
-                }, status=status.HTTP_200_OK)
+        # Check if we've reached exactly 10 questions
+        if questions_answered >= REQUIRED_QUESTIONS:
+            # Quiz complete - exactly 10 questions answered
+            return Response({
+                'message': f'Quiz completed! You answered all {REQUIRED_QUESTIONS} questions!',
+                'quiz_complete': True,
+                'total_answered': questions_answered,
+                'required_questions': REQUIRED_QUESTIONS
+            }, status=status.HTTP_200_OK)
+        
+        # Get next unique question (no repetition)
+        next_question = self._get_next_question(quiz, exclude_ids=answered_question_ids)
+        
+        if not next_question:
+            # No more unique questions available but haven't reached 10
+            return Response({
+                'message': f'Not enough unique questions available. Need {REQUIRED_QUESTIONS}, found {len(answered_question_ids)}',
+                'quiz_complete': True,
+                'total_answered': questions_answered
+            }, status=status.HTTP_200_OK)
         
         serializer = QuestionSerializer(next_question)
         return Response(serializer.data)
@@ -207,17 +193,12 @@ class AdaptiveQuizViewSet(viewsets.ModelViewSet):
         question = get_object_or_404(Question, id=question_id, is_active=True)
         selected_option = get_object_or_404(QuestionOption, id=selected_option_id)
         
-        # Check if already answered (allow reuse if needed to reach minimum questions)
-        existing_attempt = quiz.attempts.filter(question=question).first()
-        if existing_attempt:
-            # If we haven't reached minimum questions yet, allow reuse
-            MIN_QUESTIONS = 20
-            if quiz.total_questions >= MIN_QUESTIONS:
-                return Response(
-                    {'error': 'This question has already been answered.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            # Otherwise, treat this as a new attempt for reaching minimum
+        # Check if already answered (no repetition allowed)
+        if quiz.attempts.filter(question=question).exists():
+            return Response(
+                {'error': 'This question has already been answered. No repetitions allowed.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         # Check if option belongs to question
         if selected_option.question != question:

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaSearch, FaBook, FaClock, FaChartBar, FaSpinner } from 'react-icons/fa';
+import { FaSearch, FaBook, FaClock, FaChartBar, FaSpinner, FaBrain, FaRocket, FaStar, FaFire, FaTrophy } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
@@ -97,40 +98,62 @@ const QuizCategories = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <FaSpinner className="animate-spin text-6xl text-purple-600 mx-auto mb-4" />
-          <p className="text-xl text-gray-600">Loading quiz categories...</p>
+          <FaSpinner className="animate-spin text-6xl text-blue-500 mx-auto mb-4" />
+          <p className="text-xl text-gray-300">Loading quiz categories...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            Adaptive Quiz System
-          </h1>
-          <p className="text-xl text-gray-600">
+        {/* Enhanced Header with Animation */}
+        <motion.div 
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <div className="flex items-center justify-center mb-4">
+            <FaBrain className="text-5xl text-blue-500 mr-3 animate-pulse" />
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 to-red-400 bg-clip-text text-transparent">
+              Adaptive Quiz System
+            </h1>
+          </div>
+          <p className="text-xl text-gray-300 mb-4">
             Test your knowledge with our intelligent adaptive quizzes
           </p>
-        </div>
+          <div className="flex items-center justify-center space-x-6 text-sm text-gray-400">
+            <div className="flex items-center">
+              <FaRocket className="mr-2 text-blue-500" />
+              <span>10 Questions Per Quiz</span>
+            </div>
+            <div className="flex items-center">
+              <FaTrophy className="mr-2 text-red-500" />
+              <span>Adaptive Difficulty</span>
+            </div>
+            <div className="flex items-center">
+              <FaFire className="mr-2 text-blue-400" />
+              <span>Real-time Scoring</span>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Search and Filter Bar */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div className="bg-black/60 backdrop-blur-md rounded-xl shadow-lg p-6 mb-8 border border-red-900/30">
           <div className="grid md:grid-cols-2 gap-4">
             {/* Search */}
             <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
               <input
                 type="text"
                 placeholder="Search categories..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
               />
             </div>
 
@@ -138,7 +161,7 @@ const QuizCategories = () => {
             <select
               value={difficultyFilter}
               onChange={(e) => setDifficultyFilter(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             >
               <option value="all">All Difficulty Levels</option>
               <option value="1">Beginner</option>
@@ -157,25 +180,42 @@ const QuizCategories = () => {
           </div>
         )}
 
-        {/* Categories Grid */}
+        {/* Enhanced Categories Grid with Animations */}
         {filteredCategories.length === 0 ? (
-          <div className="text-center py-12">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
             <FaBook className="text-6xl text-gray-400 mx-auto mb-4" />
             <p className="text-xl text-gray-600">No categories found</p>
-          </div>
+            <p className="text-sm text-gray-500 mt-2">Try adjusting your filters</p>
+          </motion.div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCategories.map((category) => (
-              <div
+            {filteredCategories.map((category, index) => (
+              <motion.div
                 key={category.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 transform hover:-translate-y-1"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
               >
-                <div className="p-6">
-                  {/* Category Header */}
+                {/* Gradient Header Bar */}
+                <div className="h-2 bg-gradient-to-r from-blue-600 to-red-600"></div>
+                
+                <div className="p-6 bg-gray-900">
+                  {/* Category Header with Icon */}
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-2xl font-bold text-gray-800">
-                      {category.name}
-                    </h3>
+                    <div className="flex items-center flex-1">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-900 to-red-900 rounded-lg flex items-center justify-center mr-3">
+                        <FaBrain className="text-2xl text-blue-400" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white">
+                        {category.name}
+                      </h3>
+                    </div>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(
                         category.difficulty_level
@@ -186,47 +226,79 @@ const QuizCategories = () => {
                   </div>
 
                   {/* Description */}
-                  <p className="text-gray-600 mb-6 h-12 overflow-hidden">
+                  <p className="text-gray-300 mb-4 h-12 overflow-hidden text-sm leading-relaxed">
                     {category.description}
                   </p>
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="flex items-center text-gray-600">
-                      <FaBook className="mr-2 text-purple-600" />
-                      <span className="text-sm">
-                        {category.total_questions || 0} Questions
-                      </span>
+                  {/* Enhanced Stats Grid */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="bg-gradient-to-br from-blue-900/30 to-black p-3 rounded-lg border border-blue-800/30">
+                      <div className="flex items-center mb-1">
+                        <FaBook className="text-blue-400 mr-2" />
+                        <span className="text-xs font-semibold text-gray-300">Questions</span>
+                      </div>
+                      <p className="text-lg font-bold text-blue-400">
+                        {category.total_questions || 10}
+                      </p>
                     </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaClock className="mr-2 text-blue-600" />
-                      <span className="text-sm">~30 mins</span>
+                    <div className="bg-gradient-to-br from-red-900/30 to-black p-3 rounded-lg border border-red-800/30">
+                      <div className="flex items-center mb-1">
+                        <FaClock className="text-red-400 mr-2" />
+                        <span className="text-xs font-semibold text-gray-300">Duration</span>
+                      </div>
+                      <p className="text-lg font-bold text-red-400">~30 min</p>
                     </div>
                   </div>
 
-                  {/* Start Button */}
-                  <button
+                  {/* Features List */}
+                  <div className="mb-4 space-y-1">
+                    <div className="flex items-center text-xs text-gray-300">
+                      <FaStar className="text-blue-400 mr-2" />
+                      <span>Exactly 10 unique questions</span>
+                    </div>
+                    <div className="flex items-center text-xs text-gray-300">
+                      <FaFire className="text-red-400 mr-2" />
+                      <span>Adaptive difficulty progression</span>
+                    </div>
+                    <div className="flex items-center text-xs text-gray-300">
+                      <FaTrophy className="text-blue-500 mr-2" />
+                      <span>Instant feedback & explanations</span>
+                    </div>
+                  </div>
+
+                  {/* Enhanced Start Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => startQuiz(category.id)}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+                    className="w-full bg-gradient-to-r from-blue-600 to-red-600 text-white font-semibold py-3 rounded-lg hover:from-blue-700 hover:to-red-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center"
                   >
+                    <FaRocket className="mr-2" />
                     Start Quiz
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
 
-        {/* View Profile Button */}
-        <div className="text-center mt-12">
-          <button
+        {/* Enhanced View Profile Button */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="text-center mt-12"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/quiz/profile')}
-            className="inline-flex items-center px-8 py-4 bg-white text-purple-600 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            className="inline-flex items-center px-8 py-4 bg-black/60 backdrop-blur-md text-white font-semibold rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-blue-600 hover:border-red-600"
           >
             <FaChartBar className="mr-2" />
             View My Skill Profile
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       </div>
     </div>
   );

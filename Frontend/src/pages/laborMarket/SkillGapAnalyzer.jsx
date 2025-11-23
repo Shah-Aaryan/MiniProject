@@ -21,9 +21,11 @@ const SkillGapAnalyzer = () => {
   const fetchJobRoles = async () => {
     try {
       const response = await getJobRoles();
-      setJobRoles(response.data || []);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setJobRoles(data);
     } catch (error) {
       console.error('Error fetching job roles:', error);
+      setJobRoles([]);
     }
   };
 
@@ -94,7 +96,7 @@ const SkillGapAnalyzer = () => {
                 }}
               />
               <div className="max-h-64 overflow-y-auto space-y-2">
-                {jobRoles.slice(0, 10).map((role) => (
+                {Array.isArray(jobRoles) && jobRoles.slice(0, 10).map((role) => (
                   <div
                     key={role.id}
                     onClick={() => {

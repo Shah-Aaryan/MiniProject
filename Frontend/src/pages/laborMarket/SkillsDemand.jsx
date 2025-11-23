@@ -40,9 +40,12 @@ const SkillsDemand = () => {
         response = await getHighPayingSkills();
       }
 
-      setSkills(response.data || []);
+      // Ensure response is an array
+      const skillsData = Array.isArray(response.data) ? response.data : [];
+      setSkills(skillsData);
     } catch (error) {
       console.error('Error fetching skills:', error);
+      setSkills([]);
     } finally {
       setLoading(false);
     }

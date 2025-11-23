@@ -2,7 +2,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q, Avg, Count
 from .models import *
 from .serializers import *
@@ -10,7 +10,7 @@ from .serializers import *
 class IndustryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Industry.objects.all()
     serializer_class = IndustrySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     
     @action(detail=True, methods=['get'])
     def job_roles(self, request, pk=None):
@@ -35,7 +35,7 @@ class IndustryViewSet(viewsets.ReadOnlyModelViewSet):
 class JobRoleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = JobRole.objects.all()
     serializer_class = JobRoleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -115,7 +115,7 @@ class JobRoleViewSet(viewsets.ReadOnlyModelViewSet):
 class SkillDemandViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SkillDemand.objects.all()
     serializer_class = SkillDemandSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     
     @action(detail=False, methods=['get'])
     def trending_skills(self, request):
@@ -156,7 +156,7 @@ class SkillDemandViewSet(viewsets.ReadOnlyModelViewSet):
 class CompanyInsightViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CompanyInsight.objects.all()
     serializer_class = CompanyInsightSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -195,7 +195,7 @@ class CompanyInsightViewSet(viewsets.ReadOnlyModelViewSet):
 class EmergingRoleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = EmergingRole.objects.all()
     serializer_class = EmergingRoleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     
     @action(detail=False, methods=['get'])
     def top_emerging(self, request):
@@ -218,6 +218,14 @@ class EmergingRoleViewSet(viewsets.ReadOnlyModelViewSet):
 class CareerRecommendationViewSet(viewsets.ModelViewSet):
     serializer_class = CareerPathRecommendationSerializer
     permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        """
+        Allow unauthenticated access to market_insights and skill_gap_analysis
+        """
+        if self.action in ['market_insights', 'skill_gap_analysis']:
+            return [AllowAny()]
+        return super().get_permissions()
     
     def get_queryset(self):
         return CareerPathRecommendation.objects.filter(user=self.request.user)

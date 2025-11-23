@@ -49,10 +49,11 @@ const MarketDashboard = () => {
         getMarketInsights(),
       ]);
 
-      const industries = industriesRes.data || [];
-      const skills = skillsRes.data || [];
-      const roles = rolesRes.data || [];
-      const companies = companiesRes.data || [];
+      // Handle axios response - data is in response.data
+      const industries = Array.isArray(industriesRes.data) ? industriesRes.data : [];
+      const skills = Array.isArray(skillsRes.data) ? skillsRes.data : [];
+      const roles = Array.isArray(rolesRes.data) ? rolesRes.data : [];
+      const companies = Array.isArray(companiesRes.data) ? companiesRes.data : [];
       const insights = insightsRes.data || {};
 
       // Calculate metrics
@@ -70,6 +71,16 @@ const MarketDashboard = () => {
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Set empty arrays on error to prevent map errors
+      setMetrics({
+        totalJobs: 0,
+        avgSalary: 0,
+        topSkills: [],
+        growingIndustries: [],
+        emergingRoles: [],
+        topCompanies: [],
+        trendingSkills: [],
+      });
     } finally {
       setLoading(false);
     }

@@ -23,15 +23,15 @@ const FeaturesDashboard = () => {
       description: 'Take intelligent quizzes that adapt to your skill level. Get personalized questions and track your progress across different categories.',
       icon: AcademicCapIcon,
       color: 'blue',
-      route: '/adaptive-quiz',
-      features: ['Smart difficulty adjustment', 'Real-time timer', 'Skill profiling', 'Quiz history']
+      route: '/quiz/dashboard',
+      features: ['10 questions per quiz', 'Real-time timer', 'Skill profiling', 'No repetition']
     },
     {
       id: 2,
       title: 'Portfolio Builder',
       description: 'Create professional portfolios with customizable templates. Showcase your projects, experience, and skills to potential employers.',
       icon: BriefcaseIcon,
-      color: 'green',
+      color: 'blue',
       route: '/portfolio',
       features: ['Multiple templates', 'Project showcase', 'Public sharing', 'Custom domains']
     },
@@ -40,7 +40,7 @@ const FeaturesDashboard = () => {
       title: 'Skill Assessment',
       description: 'Test your skills with comprehensive assessments. Earn badges, identify skill gaps, and get personalized improvement recommendations.',
       icon: TrophyIcon,
-      color: 'yellow',
+      color: 'red',
       route: '/skill-assessment',
       features: ['Multiple question types', 'Auto-grading', 'Badge system', 'Skill gap analysis']
     },
@@ -50,7 +50,7 @@ const FeaturesDashboard = () => {
       description: 'Access real-time job market data, salary insights, and trending skills. Make informed career decisions with comprehensive market analysis.',
       icon: GlobeAltIcon,
       color: 'red',
-      route: '/labor-market',
+      route: '/market/dashboard',
       features: ['Salary insights', 'Trending skills', 'Industry analysis', 'Career recommendations']
     }
   ];
@@ -61,33 +61,57 @@ const FeaturesDashboard = () => {
         border: 'border-blue-600',
         text: 'text-blue-400',
         bg: 'bg-blue-600',
-        hover: 'hover:border-blue-500'
-      },
-      green: {
-        border: 'border-green-600',
-        text: 'text-green-400',
-        bg: 'bg-green-600',
-        hover: 'hover:border-green-500'
-      },
-      yellow: {
-        border: 'border-yellow-600',
-        text: 'text-yellow-400',
-        bg: 'bg-yellow-600',
-        hover: 'hover:border-yellow-500'
+        hover: 'hover:border-blue-500',
+        gradient: 'from-blue-500 to-blue-700'
       },
       red: {
         border: 'border-red-600',
         text: 'text-red-400',
         bg: 'bg-red-600',
-        hover: 'hover:border-red-500'
+        hover: 'hover:border-red-500',
+        gradient: 'from-red-500 to-red-700'
       }
     };
     return colors[color];
   };
 
   return (
-    <div className="chat-bg-image min-h-screen relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
+      {/* Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-red-900/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center cursor-pointer"
+              onClick={() => navigate('/')}
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-red-600 rounded-lg flex items-center justify-center mr-3">
+                <ChartBarIcon className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-red-400 bg-clip-text text-transparent">
+                Career Guidance AI
+              </span>
+            </motion.div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/')}
+                className="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-all"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => navigate('/signin')}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-red-600 text-white font-medium"
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-6 py-12 pt-24">
         {/* Header */}
         <div className="text-center mb-16">
           <motion.div
@@ -95,15 +119,15 @@ const FeaturesDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             className="inline-block mb-6"
           >
-            <div className="bg-black/70 backdrop-blur-md px-12 py-6 rounded-2xl border-2 border-cyan-500/50 shadow-2xl">
+            <div className="bg-black/70 backdrop-blur-md px-12 py-6 rounded-2xl border-2 border-blue-500/50 shadow-2xl">
               <div className="flex items-center justify-center mb-3">
-                <SparklesIcon className="w-10 h-10 text-cyan-400 mr-3 drop-shadow-lg" />
-                <h1 className="text-6xl font-black text-cyan-300 drop-shadow-[0_6px_16px_rgba(0,0,0,1)] tracking-tight">Explore Features</h1>
+                <SparklesIcon className="w-10 h-10 text-blue-400 mr-3 drop-shadow-lg" />
+                <h1 className="text-6xl font-black bg-gradient-to-r from-blue-400 to-red-400 bg-clip-text text-transparent drop-shadow-[0_6px_16px_rgba(0,0,0,1)] tracking-tight">Explore Features</h1>
               </div>
-              <p className="text-xl text-cyan-400 font-semibold drop-shadow-lg">Accelerate Your Career Growth</p>
+              <p className="text-xl text-gray-300 font-semibold drop-shadow-lg">Accelerate Your Career Growth</p>
             </div>
           </motion.div>
-          <div className="bg-black/60 backdrop-blur-sm px-8 py-4 rounded-xl border border-cyan-500/30 shadow-lg max-w-4xl mx-auto">
+          <div className="bg-black/60 backdrop-blur-sm px-8 py-4 rounded-xl border border-red-500/30 shadow-lg max-w-4xl mx-auto">
             <p className="text-xl text-white font-medium drop-shadow-[0_3px_8px_rgba(0,0,0,1)]">
               Comprehensive suite of AI-powered tools for skill development, portfolio building, and career planning.
             </p>
@@ -126,13 +150,13 @@ const FeaturesDashboard = () => {
                 className="relative group cursor-pointer"
                 onClick={() => navigate(feature.route)}
               >
-                <div className={`absolute -inset-0.5 bg-gradient-to-r from-${feature.color}-500 to-${feature.color}-600 rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-300`}></div>
-                <div className="relative bg-black/85 backdrop-blur-xl border-2 border-white/10 rounded-2xl p-8 shadow-2xl transition-all hover:border-cyan-500/50">
+                <div className={`absolute -inset-0.5 bg-gradient-to-r ${colors.gradient} rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-300`}></div>
+                <div className={`relative bg-black/85 backdrop-blur-xl border-2 ${colors.border}/30 rounded-2xl p-8 shadow-2xl transition-all hover:${colors.border}`}>
                   <div className="flex items-start justify-between mb-6">
                     <div className={`p-4 rounded-xl ${colors.bg}/20 backdrop-blur-sm border-2 ${colors.border}/50 shadow-xl`}>
                       <Icon className={`w-10 h-10 ${colors.text} drop-shadow-lg`} />
                     </div>
-                    <ArrowRightIcon className="w-6 h-6 text-cyan-400 drop-shadow-lg group-hover:translate-x-2 transition-transform" />
+                    <ArrowRightIcon className={`w-6 h-6 ${colors.text} drop-shadow-lg group-hover:translate-x-2 transition-transform`} />
                   </div>
 
                   <h3 className="text-2xl font-bold text-white mb-3 drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">{feature.title}</h3>
