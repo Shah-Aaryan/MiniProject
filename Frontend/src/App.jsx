@@ -12,6 +12,11 @@ import SignIn from "./components/pages/SignIn";
 import SignUp from "./components/pages/SignUp";
 import EnhancedResults from "./components/pages/EnhancedResults";
 import AdaptiveQuiz from "./components/adaptiveQuiz/AdaptiveQuiz";
+import AdaptiveQuizDashboard from "./components/adaptiveQuiz/AdaptiveQuizDashboard";
+import QuizCategories from "./components/adaptiveQuiz/QuizCategories";
+import QuizTaking from "./components/adaptiveQuiz/QuizTaking";
+import QuizResults from "./components/adaptiveQuiz/QuizResults";
+import SkillProfile from "./components/adaptiveQuiz/SkillProfile";
 import LearningPath from "./components/learningPath/LearningPath";
 import Portfolio from "./components/portfolio/Portfolio";
 import SkillAssessment from "./components/skillAssessment/SkillAssessment";
@@ -34,6 +39,11 @@ export default function App() {
         <Route path="/results" element={<EnhancedResults />} />
         <Route path="/features" element={<FeaturesDashboard />} />
         <Route path="/adaptive-quiz" element={<AdaptiveQuiz />} />
+        <Route path="/quiz/dashboard" element={<AdaptiveQuizDashboard />} />
+        <Route path="/quiz/categories" element={<QuizCategories />} />
+        <Route path="/quiz/take/:quizId" element={<QuizTaking />} />
+        <Route path="/quiz/results/:quizId" element={<QuizResults />} />
+        <Route path="/quiz/profile" element={<SkillProfile />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/skill-assessment" element={<SkillAssessment />} />
         <Route path="/labor-market" element={<LaborMarket />} />

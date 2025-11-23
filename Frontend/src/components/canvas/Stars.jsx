@@ -6,10 +6,10 @@ const Stars = (props) => {
   const ref = useRef();
   const [sphere] = useState(() => {
     const count = 5000;
-    const positions = new Float32Array(count);
+    const positions = new Float32Array(count * 3); // 3 coordinates per point
     
     // Generate random points in a sphere manually
-    for (let i = 0; i < count; i += 3) {
+    for (let i = 0; i < positions.length; i += 3) {
       const radius = 1.2;
       const u = Math.random();
       const v = Math.random();
@@ -59,7 +59,12 @@ const Stars = (props) => {
 const StarsCanvas = () => {
   return (
     <div className='w-full h-auto absolute inset-0 z-[-1]'>
-      <Canvas camera={{ position: [0, 0, 1] }}>
+      <Canvas 
+        camera={{ position: [0, 0, 1] }}
+        onCreated={({ gl }) => {
+          gl.setClearColor('#000000', 0);
+        }}
+      >
         <Suspense fallback={null}>
           <Stars />
         </Suspense>

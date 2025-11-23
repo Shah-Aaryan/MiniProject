@@ -140,15 +140,47 @@ class AdaptiveQuizViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Get next unanswered question
-        answered_question_ids = quiz.attempts.values_list('question_id', flat=True)
-        next_question = self._get_next_question(quiz, exclude_ids=answered_question_ids)
+        # Ensure minimum questions before allowing completion
+        # Dynamic minimum based on category size
+        category_question_count = quiz.category.questions.filter(is_active=True).count()
+        if category_question_count <= 3:
+            MIN_QUESTIONS = 9  # For very small categories (3 questions), require 9 attempts
+        elif category_question_count <= 5:
+            MIN_QUESTIONS = 12  # For small categories (4-5 questions), require 12 attempts
+        else:
+            MIN_QUESTIONS = min(20, category_question_count * 2)  # For larger categories
         
-        if not next_question:
-            return Response({
-                'message': 'No more questions available.',
-                'quiz_complete': True
-            }, status=status.HTTP_200_OK)
+        questions_answered = quiz.total_questions
+        
+        # Get next question (allow reuse if needed)
+        answered_question_ids = list(quiz.attempts.values_list('question_id', flat=True))
+        
+        # Check if we've reached minimum
+        if questions_answered >= MIN_QUESTIONS:
+            # Can complete - try to get unique question first
+            next_question = self._get_next_question(quiz, exclude_ids=answered_question_ids)
+            if not next_question:
+                # Quiz complete - reached minimum and no more unique questions
+                return Response({
+                    'message': 'Quiz completed! Well done!',
+                    'quiz_complete': True,
+                    'total_answered': questions_answered,
+                    'minimum_required': MIN_QUESTIONS
+                }, status=status.HTTP_200_OK)
+        else:
+            # Haven't reached minimum - must continue (reuse questions if needed)
+            next_question = self._get_next_question(quiz, exclude_ids=answered_question_ids)
+            if not next_question:
+                # No unique questions left, allow reuse
+                next_question = self._get_next_question(quiz, exclude_ids=[])
+            
+            if not next_question:
+                # Still no questions, force complete
+                return Response({
+                    'message': 'Quiz completed.',
+                    'quiz_complete': True,
+                    'total_answered': questions_answered
+                }, status=status.HTTP_200_OK)
         
         serializer = QuestionSerializer(next_question)
         return Response(serializer.data)
@@ -175,12 +207,17 @@ class AdaptiveQuizViewSet(viewsets.ModelViewSet):
         question = get_object_or_404(Question, id=question_id, is_active=True)
         selected_option = get_object_or_404(QuestionOption, id=selected_option_id)
         
-        # Check if already answered
-        if quiz.attempts.filter(question=question).exists():
-            return Response(
-                {'error': 'This question has already been answered.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # Check if already answered (allow reuse if needed to reach minimum questions)
+        existing_attempt = quiz.attempts.filter(question=question).first()
+        if existing_attempt:
+            # If we haven't reached minimum questions yet, allow reuse
+            MIN_QUESTIONS = 20
+            if quiz.total_questions >= MIN_QUESTIONS:
+                return Response(
+                    {'error': 'This question has already been answered.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            # Otherwise, treat this as a new attempt for reaching minimum
         
         # Check if option belongs to question
         if selected_option.question != question:
@@ -323,6 +360,70 @@ class AdaptiveQuizViewSet(viewsets.ModelViewSet):
             'review': review_data
         })
     
+    @action(detail=True, methods=['get'])
+    def learning_resources(self, request, pk=None):
+        """Get personalized learning resources based on quiz performance"""
+        quiz = self.get_object()
+        
+        if not quiz.is_completed:
+            return Response(
+                {'error': 'Quiz must be completed to get learning resources.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Analyze weak areas
+        attempts = quiz.attempts.select_related('question').all()
+        incorrect_attempts = attempts.filter(is_correct=False)
+        
+        # Get topics from incorrect answers
+        weak_topics = []
+        strong_topics = []
+        
+        for attempt in incorrect_attempts:
+            if attempt.question.skill_tags:
+                weak_topics.extend(attempt.question.skill_tags)
+        
+        correct_attempts = attempts.filter(is_correct=True)
+        for attempt in correct_attempts:
+            if attempt.question.skill_tags:
+                strong_topics.extend(attempt.question.skill_tags)
+        
+        # Count occurrences
+        from collections import Counter
+        weak_topics_count = Counter(weak_topics)
+        strong_topics_count = Counter(strong_topics)
+        
+        # Generate recommendations
+        recommendations = []
+        for topic, count in weak_topics_count.most_common(5):
+            recommendations.append({
+                'topic': topic,
+                'reason': f'You got {count} question(s) wrong in this area',
+                'priority': 'High' if count > 2 else 'Medium',
+                'resources': [
+                    {'type': 'Documentation', 'title': f'{topic} - Official Docs', 'url': '#'},
+                    {'type': 'Tutorial', 'title': f'Learn {topic}', 'url': '#'},
+                    {'type': 'Practice', 'title': f'{topic} Exercises', 'url': '#'}
+                ]
+            })
+        
+        return Response({
+            'quiz': AdaptiveQuizSerializer(quiz).data,
+            'performance_summary': {
+                'accuracy': quiz.calculate_accuracy(),
+                'score_percentage': quiz.calculate_score_percentage(),
+                'weak_areas': list(weak_topics_count.most_common(5)),
+                'strong_areas': list(strong_topics_count.most_common(3))
+            },
+            'recommendations': recommendations,
+            'next_steps': [
+                'Review the questions you got wrong',
+                'Practice the weak topics identified',
+                'Retake the quiz to improve your score',
+                f'Try other {quiz.category.name} quizzes'
+            ]
+        })
+    
     def _get_next_question(self, quiz, exclude_ids=None):
         """Get the next question based on adaptive algorithm"""
         if exclude_ids is None:
@@ -336,26 +437,45 @@ class AdaptiveQuizViewSet(viewsets.ModelViewSet):
         if not available_questions.exists():
             return None
         
-        # Simple adaptive algorithm: select question based on current difficulty
-        # In a more sophisticated implementation, this would use IRT
+        # Adaptive algorithm: adjust difficulty based on performance
         difficulty_order = ['easy', 'medium', 'hard', 'expert']
         current_difficulty_index = difficulty_order.index(quiz.current_difficulty)
         
-        # Try to get question at current difficulty level
-        question = available_questions.filter(
-            difficulty=quiz.current_difficulty
-        ).first()
+        # Calculate recent performance (last 5 questions)
+        recent_attempts = list(quiz.attempts.order_by('-answered_at')[:5])
+        if len(recent_attempts) >= 3:
+            recent_correct = sum(1 for attempt in recent_attempts if attempt.is_correct)
+            recent_accuracy = (recent_correct / len(recent_attempts)) * 100
+            
+            # Adjust difficulty dynamically
+            if recent_accuracy >= 80 and current_difficulty_index < len(difficulty_order) - 1:
+                # Increase difficulty
+                target_difficulty = difficulty_order[current_difficulty_index + 1]
+            elif recent_accuracy < 50 and current_difficulty_index > 0:
+                # Decrease difficulty
+                target_difficulty = difficulty_order[current_difficulty_index - 1]
+            else:
+                target_difficulty = quiz.current_difficulty
+        else:
+            target_difficulty = quiz.current_difficulty
         
-        # If no question at current difficulty, get closest available
-        if not question:
-            for diff in difficulty_order[current_difficulty_index:]:
-                question = available_questions.filter(difficulty=diff).first()
-                if question:
-                    break
+        # Try to get question at target difficulty level
+        question = available_questions.filter(difficulty=target_difficulty).order_by('?').first()
         
-        # Fallback to any available question
+        # If no question at target difficulty, try adjacent levels
         if not question:
-            question = available_questions.first()
+            for offset in [1, -1, 2, -2]:
+                idx = current_difficulty_index + offset
+                if 0 <= idx < len(difficulty_order):
+                    question = available_questions.filter(
+                        difficulty=difficulty_order[idx]
+                    ).order_by('?').first()
+                    if question:
+                        break
+        
+        # Fallback to any available question (randomized)
+        if not question:
+            question = available_questions.order_by('?').first()
         
         return question
     

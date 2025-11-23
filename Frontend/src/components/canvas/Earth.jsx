@@ -5,11 +5,18 @@ import { OrbitControls, Preload, useGLTF } from '@react-three/drei';
 import CanvasLoader from "../Loader";
 
 const Earth = () => {
-  const earth = useGLTF("./scene.gltf");
-
-  return (
-    <primitive object={earth.scene} scale={2.5} position-y={0} rotation-y={0} />
-  );
+  try {
+    const earth = useGLTF("./scene.gltf");
+    if (!earth || !earth.scene) {
+      return null;
+    }
+    return (
+      <primitive object={earth.scene} scale={2.5} position-y={0} rotation-y={0} />
+    );
+  } catch (error) {
+    console.warn('Failed to load Earth model:', error);
+    return null;
+  }
 };
 
 const EarthCanvas = () => {
@@ -24,7 +31,10 @@ const EarthCanvas = () => {
         near: 0.1,
         far: 200,
         position: [-4, 3, 6],
-       }}
+      }}
+      onCreated={({ gl }) => {
+        gl.physicallyCorrectLights = true;
+      }}
     >
       <Suspense fallback={<CanvasLoader />}>
         <OrbitControls  
